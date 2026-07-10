@@ -2,7 +2,7 @@ from flask import ( Flask, render_template, request, redirect, session, flash )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta ,UTC
+from datetime import datetime, timedelta 
 import pytz
 from functools import wraps
 import requests
@@ -11,10 +11,10 @@ from email.message import EmailMessage
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from flask import *
+from PIL import Image 
 from dotenv import load_dotenv
 load_dotenv()
 # from flask_wtf import CSRFProtect
-
 import csv
 import pandas as pd
 
@@ -50,9 +50,8 @@ app.config["ADMIN_PROFILE_FOLDER"] = "static/admin_profiles"
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "").strip()
 # app.secret_key = "expense_secret_key"
-app.secret_key = os.environ.get("SECRET_KEY", "expense_secret_key")
-print(app.url_map)
-
+app.secret_key = os.environ.get("SECRET_KEY")
+MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER")
 # Database setup
 database_url = os.getenv("DATABASE_URL")
 
@@ -83,8 +82,6 @@ db = SQLAlchemy(app)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
-RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-
 
 def send_otp_email(receiver_email, otp):
 
@@ -98,7 +95,7 @@ def send_otp_email(receiver_email, otp):
     email = sib_api_v3_sdk.SendSmtpEmail(
         sender={
             "name": "Expense Tracker",
-            "email": "gauravmittal1198141@gmail.com"
+            "email": MAIL_DEFAULT_SENDER
         },
         to=[
             {
@@ -120,7 +117,7 @@ def send_otp_email(receiver_email, otp):
 
     try:
         response = api_instance.send_transac_email(email)
-        print("Brevo Success:", response)
+        print("Email sent successfully")
         return True
 
     except ApiException as e:
@@ -3059,350 +3056,166 @@ def advanced_export_pdf():
     # FILTERS
     # =========================================
 
-    export_type = request.form.get(
-        "export_type",
-        "all"
-    )
+    export_type = request.form.get("export_type", "all")
 
-    include_images = request.form.get(
-        "include_images"
-    )
+    include_images = request.form.get("include_images") == "on"
+    include_description = request.form.get("include_description") == "on"
 
-    include_description = request.form.get(
-        "include_description"
-    )
+    # ✅ FIX: charts ALWAYS included by default
+    include_charts = True if request.method == "GET" else (request.form.get("include_charts") != "off")
 
-    include_charts = request.form.get(
-    "include_charts"
-    )
-
-    current_month = ist_now().strftime(
-        "%Y-%m"
-    )
+    current_month = ist_now().strftime("%Y-%m")
 
     # =========================================
     # GET EXPENSES
     # =========================================
 
-    all_expenses = Expense.query.filter_by(
-        user_id=user_id
-    ).all()
-
+    all_expenses = Expense.query.filter_by(user_id=user_id).all()
     expenses = []
 
-    for expense in all_expenses:
+    start_date = request.form.get("start_date")
+    end_date = request.form.get("end_date")
 
+    for expense in all_expenses:
         expense_date = str(expense.date)
 
-        # ALL EXPENSES
         if export_type == "all":
-
             expenses.append(expense)
 
-        # MONTHLY EXPENSES
         elif export_type == "monthly":
-
             if expense_date.startswith(current_month):
-
                 expenses.append(expense)
 
-        # DATE RANGE
         elif export_type == "date_range":
+            if start_date and end_date:
+                try:
+                    expense_date_obj = datetime.strptime(expense_date, "%Y-%m-%d")
+                    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+                    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
 
-            start_date = request.form.get(
-                "start_date"
-            )
-
-            end_date = request.form.get(
-                "end_date"
-            )
-
-            if start_date <= expense_date <= end_date:
-
-                expenses.append(expense)
+                    if start_date_obj <= expense_date_obj <= end_date_obj:
+                        expenses.append(expense)
+                except:
+                    pass
 
     # =========================================
     # EXPORT FOLDER
     # =========================================
 
-    export_folder = os.path.join(
-        "static",
-        "exports"
-    )
-
-    os.makedirs(
-        export_folder,
-        exist_ok=True
-    )
+    export_folder = os.path.join("static", "exports")
+    os.makedirs(export_folder, exist_ok=True)
 
     # =========================================
-    # CREATE CHART
+    # IMAGE COMPRESS FUNCTION
+    # =========================================
+
+    def compress_image(input_path, output_path):
+        img = Image.open(input_path)
+        img = img.convert("RGB")
+        img.thumbnail((800, 800))  # size control
+        img.save(output_path, "JPEG", quality=60)  # quality control
+
+    # =========================================
+    # CREATE CHART (ALWAYS CREATE IF DATA EXISTS)
     # =========================================
 
     category_data = {}
 
     for expense in expenses:
+        category_data[expense.category] = category_data.get(expense.category, 0) + expense.amount
 
-        if expense.category in category_data:
-
-            category_data[
-                expense.category
-            ] += expense.amount
-
-        else:
-
-            category_data[
-                expense.category
-            ] = expense.amount
-
-    categories = list(
-        category_data.keys()
-    )
-
-    amounts = list(
-        category_data.values()
-    )
+    categories = list(category_data.keys())
+    amounts = list(category_data.values())
 
     chart_path = os.path.join(
-
         export_folder,
-
-        f"chart_{user_id}.png"
-
+        f"chart_{user_id}_{int(time.time())}.png"
     )
 
-    if include_charts and len(categories) > 0:
-        plt.figure(figsize=(7, 7))
+    # ✅ FIX: chart ALWAYS generate if data exists
+    if len(categories) > 0:
+        plt.figure(figsize=(5, 5))  # slightly bigger for better clarity
+        plt.pie(amounts, labels=categories, autopct="%1.1f%%")
+        plt.title("Expense Distribution")
 
-        plt.pie(
-
-            amounts,
-
-            labels=categories,
-
-            autopct="%1.1f%%"
-
-        )
-
-        plt.title(
-            "Expense Distribution"
-        )
-
-        plt.savefig(chart_path)
-
-        plt.clf()
-
+        plt.savefig(chart_path, dpi=150, bbox_inches='tight')  # better quality
         plt.close()
 
     # =========================================
     # PDF START
     # =========================================
 
-    pdf = FPDF()
-
-    pdf.set_auto_page_break(
-        auto=True,
-        margin=15
-    )
-
+    pdf = FPDF(unit='mm', format='A4')
+    pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
     # =========================================
     # TITLE
     # =========================================
 
-    pdf.set_font(
-        "Arial",
-        "B",
-        24
-    )
-
-    pdf.cell(
-        190,
-        15,
-        "Expense Tracker Report",
-        ln=True,
-        align="C"
-    )
-
+    pdf.set_font("Arial", "B", 24)
+    pdf.cell(190, 15, "Expense Tracker Report", ln=True, align="C")
     pdf.ln(10)
 
     # =========================================
     # REPORT TYPE
     # =========================================
 
-    pdf.set_font(
-        "Arial",
-        "B",
-        13
-    )
+    pdf.set_font("Arial", "B", 13)
 
     report_name = "All Expenses Report"
-
     if export_type == "monthly":
-
         report_name = "Monthly Expense Report"
-
     elif export_type == "date_range":
-
         report_name = "Date Range Expense Report"
 
-    pdf.cell(
-        190,
-        10,
-        report_name,
-        ln=True
-    )
-
+    pdf.cell(190, 10, report_name, ln=True)
     pdf.ln(5)
 
     # =========================================
     # STATISTICS
     # =========================================
 
-    total_spending = sum(
-        expense.amount for expense in expenses
-    )
-
+    total_spending = sum(exp.amount for exp in expenses)
     total_expenses = len(expenses)
+    average_expense = round(total_spending / total_expenses, 2) if total_expenses > 0 else 0
 
-    average_expense = 0
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(190, 10, "Statistics", ln=True)
 
-    if total_expenses > 0:
-
-        average_expense = round(
-
-            total_spending / total_expenses,
-
-            2
-
-        )
-
-    pdf.set_font(
-        "Arial",
-        "B",
-        14
-    )
-
-    pdf.cell(
-        190,
-        10,
-        "Statistics",
-        ln=True
-    )
-
-    pdf.set_font(
-        "Arial",
-        "",
-        12
-    )
-
-    pdf.cell(
-        190,
-        8,
-        f"Total Expenses : {total_expenses}",
-        ln=True
-    )
-
-    pdf.cell(
-        190,
-        8,
-        f"Total Spending : Rs. {total_spending}",
-        ln=True
-    )
-
-    pdf.cell(
-        190,
-        8,
-        f"Average Expense : Rs. {average_expense}",
-        ln=True
-    )
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(190, 8, f"Total Expenses : {total_expenses}", ln=True)
+    pdf.cell(190, 8, f"Total Spending : Rs. {total_spending}", ln=True)
+    pdf.cell(190, 8, f"Average Expense : Rs. {average_expense}", ln=True)
 
     pdf.ln(10)
 
     # =========================================
-    # CHART
+    # CHART (ALWAYS ADD IF FILE EXISTS)
     # =========================================
 
     if os.path.exists(chart_path):
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(190, 10, "Expense Analytics Chart", ln=True)
 
-        pdf.set_font(
-            "Arial",
-            "B",
-            14
-        )
-
-        pdf.cell(
-            190,
-            10,
-            "Expense Analytics Chart",
-            ln=True
-        )
-
-        pdf.image(
-            chart_path,
-            x=35,
-            w=140
-        )
-
-        pdf.ln(90)
+        pdf.image(chart_path, x=25, w=150)  # bigger chart
+        pdf.ln(95)
 
     # =========================================
-    # TABLE SECTION
+    # TABLE HEADER
     # =========================================
 
-    pdf.set_font(
-        "Arial",
-        "B",
-        14
-    )
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(190, 10, "Expense Details", ln=True)
 
-    pdf.cell(
-        190,
-        10,
-        "Expense Details",
-        ln=True
-    )
+    pdf.set_font("Arial", "B", 11)
 
-    # =========================================
-    # TABLE HEADERS
-    # =========================================
-
-    pdf.set_font(
-        "Arial",
-        "B",
-        11
-    )
-
-    pdf.cell(
-        50,
-        10,
-        "Category",
-        1
-    )
-
-    pdf.cell(
-        35,
-        10,
-        "Amount",
-        1
-    )
-
-    pdf.cell(
-        45,
-        10,
-        "Date",
-        1
-    )
+    pdf.cell(50, 10, "Category", 1)
+    pdf.cell(35, 10, "Amount", 1)
+    pdf.cell(45, 10, "Date", 1)
 
     if include_description:
-
-        pdf.cell(
-            60,
-            10,
-            "Description",
-            1
-        )
+        pdf.cell(60, 10, "Description", 1)
 
     pdf.ln()
 
@@ -3410,156 +3223,73 @@ def advanced_export_pdf():
     # TABLE DATA
     # =========================================
 
-    pdf.set_font(
-        "Arial",
-        "",
-        10
-    )
+    pdf.set_font("Arial", "", 10)
 
     if len(expenses) == 0:
-
-        pdf.cell(
-            190,
-            10,
-            "No Expenses Found",
-            1,
-            ln=True
-        )
+        pdf.cell(190, 10, "No Expenses Found", 1, ln=True)
 
     else:
-
         for expense in expenses:
 
-            pdf.cell(
-                50,
-                10,
-                str(expense.category),
-                1
-            )
+            pdf.cell(50, 10, str(expense.category), 1)
+            pdf.cell(35, 10, f"Rs. {expense.amount}", 1)
+            pdf.cell(45, 10, str(expense.date), 1)
 
-            pdf.cell(
-                35,
-                10,
-                f"Rs. {expense.amount}",
-                1
-            )
-
-            pdf.cell(
-                45,
-                10,
-                str(expense.date),
-                1
-            )
-
-            # DESCRIPTION
             if include_description:
-
-                description_text = ""
-
-                if hasattr(expense, "description"):
-
-                    if expense.description:
-
-                        description_text = str(
-                            expense.description
-                        )[:28]
-
-                pdf.cell(
-                    60,
-                    10,
-                    description_text,
-                    1
-                )
+                desc = str(expense.description)[:28] if getattr(expense, "description", "") else ""
+                pdf.cell(60, 10, desc, 1)
 
             pdf.ln()
 
             # =========================================
             # IMAGE SECTION
             # =========================================
-            if include_images:
 
-                if expense.images:
+            if include_images and expense.images:
+                try:
+                    image_list = json.loads(expense.images)
+                except:
+                    image_list = [expense.images]
 
-                    try:
+                for image_name in image_list:
 
-                        import json
+                    image_name = secure_filename(image_name)
+                    image_path = os.path.join("static", "uploads", image_name)
 
-                        image_list = json.loads(expense.images)
+                    if os.path.exists(image_path):
+                        try:
+                            name, ext = os.path.splitext(image_path)
+                            compressed_path = f"{name}_compressed.jpg"
 
-                    except:
+                            compress_image(image_path, compressed_path)
 
-                        image_list = [expense.images]
+                            pdf.cell(190, 10, "Attached Receipt/Image", ln=True)
+                            pdf.image(compressed_path, w=110)
+                            pdf.ln(85)
 
-                    for image_name in image_list:
+                        except Exception as e:
+                            print("PDF Image Error:", e)
 
-                        image_path = os.path.join(
-                            "static",
-                            "uploads",
-                            image_name
-                        )
-
-                        if os.path.exists(image_path):
-
-                            try:
-
-                                pdf.cell(
-                                    190,
-                                    10,
-                                    "Attached Receipt/Image",
-                                    ln=True
-                                )
-
-                                pdf.image(
-                                    image_path,
-                                    w=120
-                                )
-
-                                pdf.ln(85)
-
-                            except Exception as e:
-
-                                print("PDF Image Error:", e)
     # =========================================
     # FOOTER
     # =========================================
 
     pdf.ln(10)
-
-    pdf.set_font(
-        "Arial",
-        "I",
-        10
-    )
-
-    pdf.cell(
-        190,
-        10,
-        f"Generated On : {ist_now()}",
-        ln=True,
-        align="C"
-    )
+    pdf.set_font("Arial", "I", 10)
+    pdf.cell(190, 10, f"Generated On : {ist_now()}", ln=True, align="C")
 
     # =========================================
     # SAVE PDF
     # =========================================
 
     pdf_path = os.path.join(
-
         export_folder,
-
         f"expense_report_{user_id}_{int(time.time())}.pdf"
-
     )
 
     pdf.output(pdf_path)
 
-    return send_file(
-
-        pdf_path,
-
-        as_attachment=True
-
-    )
+    return send_file(pdf_path, as_attachment=True)
 
 @app.route("/settings_storage")
 @login_required
@@ -4855,7 +4585,7 @@ def reset_entire_app():
         "confirm_text"
     )
 
-    if confirm != "RESET EVERYTHING":
+    if confirm != "RESET EVERYTHING.....":
 
         return """
         <h2 style='
