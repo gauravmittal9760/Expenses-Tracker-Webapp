@@ -83,7 +83,13 @@ python app.py
 
 ## Screenshots
 
-Add your project screenshots here.
+![Login Page](Screenshots/login.png)
+
+![Signup Page](Screenshots/signup.png)
+
+![Dashboard](Screenshots/dashboard.png)
+
+![Admin Panel](screenshots/admin.png)
 
 ---
 
