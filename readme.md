@@ -89,7 +89,7 @@ python app.py
 
 ![Dashboard](Screenshots/dashboard.png)
 
-![Admin Panel](screenshots/admin.png)
+![Admin Panel](Screenshots/admin.png)
 
 ---
 
