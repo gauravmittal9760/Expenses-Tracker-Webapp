@@ -18,6 +18,10 @@ load_dotenv()
 import csv
 import pandas as pd
 
+from ml.forecasting import predict_future_spending
+from ml.anomaly_detection import detect_anomalies
+from ai.ai_service import generate_financial_recommendation
+
 from flask import send_file
 from fpdf import FPDF
 import random
@@ -2043,113 +2047,136 @@ def expense_statistics():
     )
 
 @app.route("/expense_predictions")
+@login_required
 def expense_predictions():
-
-    if "user_id" not in session:
-        return redirect("/")
 
     expenses = Expense.query.filter_by(
         user_id=session["user_id"]
+    ).order_by(
+        Expense.date.asc()
     ).all()
 
-    total_expense = 0
+    # ------------------------------------------
+    # Basic statistics
+    # ------------------------------------------
 
-    total_transactions = len(
-        expenses
+    total_expense = sum(
+        float(expense.amount or 0)
+        for expense in expenses
     )
 
-    prediction = 0
+    total_transactions = len(expenses)
 
-    trend = "Stable"
+    average = (
+        total_expense / total_transactions
+        if total_transactions > 0
+        else 0
+    )
 
-    for expense in expenses:
+    # ------------------------------------------
+    # Machine Learning forecast
+    # ------------------------------------------
 
-        total_expense += expense.amount
+    try:
+        forecast = predict_future_spending(
+            expenses,
+            future_days=30
+        )
+    except Exception as e:
+        print("ML FORECAST ERROR:", e)
+        forecast = {
+            "success": False,
+            "predicted_total": 0.0,
+            "daily_predictions": [],
+            "message": (
+                "ML forecasting is temporarily unavailable."
+            )
+        }
 
-    if total_transactions > 0:
+    if forecast.get("success"):
 
-        average = (
-            total_expense / total_transactions
+        prediction = float(
+            forecast.get("predicted_total", 0)
         )
 
-        prediction = round(
-            average * 30,
-            2
-        )
-
-        if average > 1000:
-
-            trend = "High Spending Trend"
-
-        elif average > 500:
-
-            trend = "Moderate Spending Trend"
-
-        else:
-
-            trend = "Low Spending Trend"
+        trend = "ML Forecast Available"
 
     else:
 
-        average = 0
+        prediction = 0.0
+        trend = "Not Enough Data"
 
-    return render_template(
-
-        "expense_predictions.html",
-
-        average=round(average, 2),
-
-        prediction=prediction,
-
-        trend=trend,
-
-        total_expense=total_expense
+    forecast_message = forecast.get(
+        "message",
+        "No forecast message available."
     )
 
+    return render_template(
+        "expense_predictions.html",
+        average=round(average, 2),
+        prediction=round(prediction, 2),
+        trend=trend,
+        total_expense=round(total_expense, 2),
+        forecast_message=forecast_message,
+        forecast_success=forecast.get(
+            "success",
+            False
+        ),
+        daily_predictions=forecast.get(
+            "daily_predictions",
+            []
+        )
+    )
+
+
 @app.route("/ai_insights")
+@login_required
 def ai_insights():
 
-    if "user_id" not in session:
+    user = User.query.get(
+        session["user_id"]
+    )
+
+    if not user:
         return redirect("/")
 
     expenses = Expense.query.filter_by(
         user_id=session["user_id"]
+    ).order_by(
+        Expense.date.asc()
     ).all()
 
-    total_expense = 0
+    # ------------------------------------------
+    # Total spending
+    # ------------------------------------------
+
+    total_expense = sum(
+        float(expense.amount or 0)
+        for expense in expenses
+    )
+
+    # ------------------------------------------
+    # Category-wise spending
+    # ------------------------------------------
 
     category_totals = {}
 
-    insight = ""
-
-    advice = ""
-
     for expense in expenses:
 
-        total_expense += expense.amount
+        category = expense.category or "Other"
 
-        if expense.category in category_totals:
-
-            category_totals[
-                expense.category
-            ] += expense.amount
-
-        else:
-
-            category_totals[
-                expense.category
-            ] = expense.amount
+        category_totals[category] = (
+            category_totals.get(category, 0.0)
+            + float(expense.amount or 0)
+        )
 
     highest_category = "None"
-
-    highest_amount = 0
+    highest_amount = 0.0
 
     if category_totals:
 
         highest_category = max(
-
             category_totals,
-
             key=category_totals.get
         )
 
@@ -2157,49 +2184,126 @@ def ai_insights():
             highest_category
         ]
 
-    if total_expense > 50000:
+    # ------------------------------------------
+    # Machine Learning forecast
+    # ------------------------------------------
 
-        insight = (
-            "Your spending is very high this month."
+    try:
+        forecast = predict_future_spending(
+            expenses,
+            future_days=30
         )
+    except Exception as e:
+        print("ML FORECAST ERROR:", e)
+        forecast = {
+            "success": False,
+            "predicted_total": 0.0,
+            "daily_predictions": [],
+            "message": (
+                "ML forecasting is temporarily unavailable."
+            )
+        }
+
+    predicted_total = (
+        float(forecast.get("predicted_total", 0))
+        if forecast.get("success")
+        else None
+    )
+
+    # ------------------------------------------
+    # Machine Learning anomaly detection
+    # ------------------------------------------
+
+    try:
+        anomaly_result = detect_anomalies(
+            expenses
+        )
+    except Exception as e:
+        print("ML ANOMALY ERROR:", e)
+        anomaly_result = {
+            "success": False,
+            "anomalies": [],
+            "count": 0,
+            "message": (
+                "ML anomaly detection is temporarily unavailable."
+            )
+        }
+
+    anomalies = anomaly_result.get(
+        "anomalies",
+        []
+    )
+
+    # ------------------------------------------
+    # AI recommendation layer
+    # ------------------------------------------
+
+    try:
+        advice = generate_financial_recommendation(
+            user=user,
+            expenses=expenses,
+            forecast=forecast,
+            anomalies=anomalies
+        )
+
+    except Exception as e:
+
+        print("AI ERROR:", e)
 
         advice = (
-            "Try reducing unnecessary expenses and increase savings."
-        )
-
-    elif total_expense > 20000:
-
-        insight = (
-            "Your spending is moderate."
-        )
-
-        advice = (
-            "Maintain a balanced budget for better savings."
-        )
-
-    else:
-
-        insight = (
-            "Your spending is under control."
-        )
-
-        advice = (
-            "Great job! Keep managing your finances wisely."
+            "AI recommendations are temporarily "
+            "unavailable. Please check the AI service "
+            "configuration and try again."
         )
 
     return render_template(
-
         "ai_insights.html",
 
-        total_expense=total_expense,
+        total_expense=round(
+            total_expense,
+            2
+        ),
 
         highest_category=highest_category,
 
-        highest_amount=highest_amount,
+        highest_amount=round(
+            highest_amount,
+            2
+        ),
 
-        insight=insight,
+        insight=(
+            "AI analysis based on your actual spending "
+            "behaviour, combined with machine-learning "
+            "forecasting and anomaly detection."
+        ),
 
-        advice=advice
+        advice=advice,
+
+        predicted_total=predicted_total,
+
+        anomalies=anomalies,
+
+        anomaly_count=len(anomalies),
+
+        forecast_success=forecast.get(
+            "success",
+            False
+        ),
+
+        forecast_message=forecast.get(
+            "message",
+            ""
+        ),
+
+        anomaly_success=anomaly_result.get(
+            "success",
+            False
+        ),
+
+        anomaly_message=anomaly_result.get(
+            "message",
+            ""
+        )
     )
 
 @app.route("/budget_warnings")

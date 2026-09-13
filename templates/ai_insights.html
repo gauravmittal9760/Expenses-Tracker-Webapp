@@ -1,7 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>
         AI Expense Insights
@@ -19,10 +26,19 @@
 
     <style>
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
 
             background:
-                radial-gradient(circle at top left, #111827 0%, #0f172a 45%, #020617 100%);
+                radial-gradient(
+                    circle at top left,
+                    #111827 0%,
+                    #0f172a 45%,
+                    #020617 100%
+                );
 
             min-height: 100vh;
 
@@ -30,21 +46,30 @@
 
             overflow-x: hidden;
 
+            font-family:
+                "Segoe UI",
+                Arial,
+                sans-serif;
         }
+
 
         .page-wrapper {
 
             padding: 50px 15px;
-
         }
+
+
+        /* =========================
+           HERO
+        ========================= */
 
         .hero-section {
 
             text-align: center;
 
             margin-bottom: 50px;
-
         }
+
 
         .hero-badge {
 
@@ -58,17 +83,19 @@
 
             border-radius: 50px;
 
-            background: rgba(59,130,246,0.12);
+            background:
+                rgba(59,130,246,0.12);
 
-            border: 1px solid rgba(59,130,246,0.25);
+            border:
+                1px solid rgba(59,130,246,0.25);
 
             color: #93c5fd;
 
             font-size: 14px;
 
             margin-bottom: 20px;
-
         }
+
 
         .hero-title {
 
@@ -76,20 +103,21 @@
 
             font-weight: 800;
 
-            background: linear-gradient(
-                90deg,
-                #60a5fa,
-                #38bdf8,
-                #818cf8
-            );
+            background:
+                linear-gradient(
+                    90deg,
+                    #60a5fa,
+                    #38bdf8,
+                    #818cf8
+                );
 
             -webkit-background-clip: text;
 
             -webkit-text-fill-color: transparent;
 
             margin-bottom: 12px;
-
         }
+
 
         .hero-subtitle {
 
@@ -97,7 +125,17 @@
 
             font-size: 17px;
 
+            max-width: 800px;
+
+            margin-left: auto;
+
+            margin-right: auto;
         }
+
+
+        /* =========================
+           STAT CARDS
+        ========================= */
 
         .stats-card {
 
@@ -109,21 +147,23 @@
 
             overflow: hidden;
 
-            border: 1px solid rgba(255,255,255,0.08);
+            border:
+                1px solid rgba(255,255,255,0.08);
 
             backdrop-filter: blur(16px);
 
             transition: 0.35s ease;
 
             height: 100%;
-
         }
+
 
         .stats-card:hover {
 
-            transform: translateY(-6px);
-
+            transform:
+                translateY(-6px);
         }
+
 
         .stats-card::before {
 
@@ -141,9 +181,10 @@
 
             right: -70px;
 
-            background: rgba(255,255,255,0.08);
-
+            background:
+                rgba(255,255,255,0.08);
         }
+
 
         .stats-icon {
 
@@ -163,19 +204,21 @@
 
             margin-bottom: 25px;
 
-            background: rgba(255,255,255,0.12);
-
+            background:
+                rgba(255,255,255,0.12);
         }
+
 
         .stats-label {
 
-            color: rgba(255,255,255,0.8);
+            color:
+                rgba(255,255,255,0.8);
 
             font-size: 15px;
 
             margin-bottom: 8px;
-
         }
+
 
         .stats-value {
 
@@ -183,7 +226,9 @@
 
             font-weight: 800;
 
+            word-break: break-word;
         }
+
 
         .stats-extra {
 
@@ -191,9 +236,10 @@
 
             font-size: 15px;
 
-            color: rgba(255,255,255,0.8);
-
+            color:
+                rgba(255,255,255,0.8);
         }
+
 
         .primary-card {
 
@@ -203,8 +249,8 @@
                     rgba(37,99,235,0.95),
                     rgba(29,78,216,0.92)
                 );
-
         }
+
 
         .danger-card {
 
@@ -214,14 +260,20 @@
                     rgba(220,38,38,0.95),
                     rgba(153,27,27,0.92)
                 );
-
         }
+
+
+        /* =========================
+           GLASS CARDS
+        ========================= */
 
         .glass-card {
 
-            background: rgba(30,41,59,0.82);
+            background:
+                rgba(30,41,59,0.82);
 
-            border: 1px solid rgba(255,255,255,0.08);
+            border:
+                1px solid rgba(255,255,255,0.08);
 
             border-radius: 28px;
 
@@ -233,14 +285,15 @@
                 0 0 35px rgba(0,0,0,0.35);
 
             transition: 0.3s ease;
-
         }
+
 
         .glass-card:hover {
 
-            transform: translateY(-4px);
-
+            transform:
+                translateY(-4px);
         }
+
 
         .section-title {
 
@@ -255,8 +308,8 @@
             font-weight: 700;
 
             margin-bottom: 25px;
-
         }
+
 
         .section-icon {
 
@@ -274,23 +327,49 @@
 
             font-size: 24px;
 
+            flex-shrink: 0;
         }
+
 
         .insight-icon {
 
-            background: rgba(59,130,246,0.15);
+            background:
+                rgba(59,130,246,0.15);
 
-            color: #60a5fa;
-
+            color:
+                #60a5fa;
         }
+
 
         .advice-icon {
 
-            background: rgba(34,197,94,0.15);
+            background:
+                rgba(34,197,94,0.15);
 
-            color: #4ade80;
-
+            color:
+                #4ade80;
         }
+
+
+        .forecast-icon {
+
+            background:
+                rgba(139,92,246,0.15);
+
+            color:
+                #a78bfa;
+        }
+
+
+        .anomaly-icon {
+
+            background:
+                rgba(245,158,11,0.15);
+
+            color:
+                #fbbf24;
+        }
+
 
         .insight-text {
 
@@ -298,9 +377,16 @@
 
             line-height: 1.9;
 
-            color: #e2e8f0;
+            color:
+                #e2e8f0;
 
+            white-space: pre-line;
         }
+
+
+        /* =========================
+           SAVINGS ADVICE
+        ========================= */
 
         .advice-box {
 
@@ -311,9 +397,336 @@
                     rgba(34,197,94,0.08)
                 );
 
-            border: 1px solid rgba(34,197,94,0.2);
-
+            border:
+                1px solid rgba(34,197,94,0.2);
         }
+
+        /* AI SAVINGS ADVICE FORMATTING */
+
+        .advice-content {
+            font-size: 17px;
+            line-height: 1.8;
+            color: #e2e8f0;
+        }
+
+        .advice-heading {
+            margin-top: 18px;
+            margin-bottom: 8px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #86efac;
+        }
+
+        .advice-heading:first-child {
+            margin-top: 0;
+        }
+
+        .advice-line {
+            margin-bottom: 8px;
+        }
+
+        .advice-spacer {
+            height: 8px;
+        }
+
+
+        /* =========================
+           ML INFORMATION CARDS
+        ========================= */
+
+        .ml-card {
+
+            background:
+                rgba(15,23,42,0.72);
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
+            border-radius: 24px;
+
+            padding: 30px;
+
+            backdrop-filter:
+                blur(15px);
+
+            transition:
+                0.3s ease;
+        }
+
+
+        .ml-card:hover {
+
+            transform:
+                translateY(-4px);
+
+            border-color:
+                rgba(255,255,255,0.14);
+        }
+
+
+        .ml-card-header {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .ml-card-icon {
+
+            width: 55px;
+
+            height: 55px;
+
+            border-radius: 16px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 23px;
+
+            flex-shrink: 0;
+        }
+
+
+        .forecast-card
+        .ml-card-icon {
+
+            background:
+                rgba(139,92,246,0.15);
+
+            color:
+                #a78bfa;
+        }
+
+
+        .anomaly-card
+        .ml-card-icon {
+
+            background:
+                rgba(245,158,11,0.15);
+
+            color:
+                #fbbf24;
+        }
+
+
+        .ml-card-title {
+
+            font-size: 22px;
+
+            font-weight: 700;
+
+            margin: 0;
+        }
+
+
+        .ml-card-subtitle {
+
+            color:
+                #94a3b8;
+
+            font-size: 14px;
+
+            margin-top: 4px;
+        }
+
+
+        .forecast-value {
+
+            font-size: 36px;
+
+            font-weight: 800;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #a78bfa,
+                    #60a5fa
+                );
+
+            -webkit-background-clip: text;
+
+            -webkit-text-fill-color: transparent;
+
+            margin-bottom: 8px;
+        }
+
+
+        .ml-description {
+
+            color:
+                #cbd5e1;
+
+            font-size: 15px;
+
+            line-height: 1.7;
+
+            margin: 0;
+        }
+
+
+        /* =========================
+           ANOMALY LIST
+        ========================= */
+
+        .anomaly-summary {
+
+            color:
+                #cbd5e1;
+
+            font-size: 15px;
+
+            line-height: 1.7;
+
+            margin-bottom: 18px;
+        }
+
+
+        .anomaly-list {
+
+            list-style: none;
+
+            padding: 0;
+
+            margin: 0;
+        }
+
+
+        .anomaly-item {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding: 15px 18px;
+
+            margin-bottom: 10px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(245,158,11,0.07);
+
+            border:
+                1px solid rgba(245,158,11,0.12);
+        }
+
+
+        .anomaly-left {
+
+            min-width: 0;
+        }
+
+
+        .anomaly-category {
+
+            font-weight: 700;
+
+            color:
+                #f8fafc;
+
+            font-size: 15px;
+        }
+
+
+        .anomaly-description {
+
+            color:
+                #94a3b8;
+
+            font-size: 13px;
+
+            margin-top: 3px;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+            max-width: 450px;
+        }
+
+
+        .anomaly-right {
+
+            text-align: right;
+
+            flex-shrink: 0;
+        }
+
+
+        .anomaly-amount {
+
+            font-weight: 800;
+
+            color:
+                #fbbf24;
+        }
+
+
+        .anomaly-date {
+
+            color:
+                #94a3b8;
+
+            font-size: 12px;
+
+            margin-top: 3px;
+        }
+
+
+        .no-anomaly {
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            background:
+                rgba(34,197,94,0.07);
+
+            border:
+                1px solid rgba(34,197,94,0.15);
+
+            color:
+                #86efac;
+
+            font-size: 15px;
+        }
+
+
+        .ml-note {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            margin-top: 15px;
+
+            color:
+                #94a3b8;
+
+            font-size: 13px;
+        }
+
+
+        /* =========================
+           BACK BUTTON
+        ========================= */
 
         .back-btn {
 
@@ -328,14 +741,19 @@
             font-weight: 700;
 
             transition: 0.3s ease;
-
         }
+
 
         .back-btn:hover {
 
-            transform: translateY(-3px);
-
+            transform:
+                translateY(-3px);
         }
+
+
+        /* =========================
+           BACKGROUND BLUR
+        ========================= */
 
         .floating-blur {
 
@@ -353,46 +771,79 @@
 
             z-index: -1;
 
+            pointer-events: none;
         }
+
 
         .blur-one {
 
-            background: #3b82f6;
+            background:
+                #3b82f6;
 
             top: -100px;
 
             left: -80px;
-
         }
+
 
         .blur-two {
 
-            background: #22c55e;
+            background:
+                #22c55e;
 
             bottom: -100px;
 
             right: -80px;
-
         }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
 
         @media(max-width: 768px) {
 
             .hero-title {
 
                 font-size: 36px;
-
             }
+
 
             .stats-value {
 
                 font-size: 30px;
-
             }
+
 
             .glass-card {
 
                 padding: 25px;
+            }
 
+
+            .ml-card {
+
+                padding: 24px;
+            }
+
+
+            .anomaly-item {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+
+            .anomaly-right {
+
+                text-align: left;
+            }
+
+
+            .anomaly-description {
+
+                max-width: 100%;
             }
 
         }
@@ -401,15 +852,21 @@
 
 </head>
 
+
 <body>
+
 
 <div class="floating-blur blur-one"></div>
 
 <div class="floating-blur blur-two"></div>
 
+
 <div class="container page-wrapper">
 
-    <!-- HERO -->
+
+    <!-- =========================
+         HERO
+    ========================== -->
 
     <div class="hero-section">
 
@@ -421,24 +878,31 @@
 
         </div>
 
+
         <h1 class="hero-title">
 
             AI Expense Insights
 
         </h1>
 
+
         <p class="hero-subtitle">
 
             Smart analysis of your spending habits, financial patterns,
-            and saving opportunities.
+            and saving opportunities using your actual expense data.
 
         </p>
 
     </div>
 
-    <!-- STATS -->
+
+
+    <!-- =========================
+         STATS
+    ========================== -->
 
     <div class="row g-4 mb-5">
+
 
         <div class="col-lg-6">
 
@@ -450,17 +914,20 @@
 
                 </div>
 
+
                 <div class="stats-label">
 
                     Total Expenses
 
                 </div>
 
+
                 <div class="stats-value">
 
                     ₹{{ total_expense }}
 
                 </div>
+
 
                 <div class="stats-extra">
 
@@ -472,6 +939,8 @@
 
         </div>
 
+
+
         <div class="col-lg-6">
 
             <div class="stats-card danger-card">
@@ -482,17 +951,20 @@
 
                 </div>
 
+
                 <div class="stats-label">
 
                     Highest Spending Category
 
                 </div>
 
+
                 <div class="stats-value">
 
                     {{ highest_category }}
 
                 </div>
+
 
                 <div class="stats-extra">
 
@@ -506,7 +978,11 @@
 
     </div>
 
-    <!-- AI INSIGHT -->
+
+
+    <!-- =========================
+         AI INSIGHT
+    ========================== -->
 
     <div class="glass-card mb-4">
 
@@ -522,6 +998,7 @@
 
         </div>
 
+
         <div class="insight-text">
 
             {{ insight }}
@@ -530,9 +1007,13 @@
 
     </div>
 
-    <!-- SAVINGS ADVICE -->
 
-    <div class="glass-card advice-box">
+
+    <!-- =========================
+         AI SAVINGS ADVICE
+    ========================== -->
+
+    <div class="glass-card advice-box mb-4">
 
         <div class="section-title">
 
@@ -542,19 +1023,228 @@
 
             </div>
 
-            Savings Advice
+            AI Savings Advice
 
         </div>
 
-        <div class="insight-text">
 
-            {{ advice }}
+        <div class="advice-content">
+            {% if advice %}
+                {% for line in advice.split('\n') %}
+                    {% if line.startswith('### ') %}
+                        <div class="advice-heading">
+                            {{ line[4:] }}
+                        </div>
+                    {% elif line.strip() == '' %}
+                        <div class="advice-spacer"></div>
+                    {% else %}
+                        <div class="advice-line">
+                            {{ line }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="advice-line">
+                    Continue recording expenses to generate personalized financial advice.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+    <!-- =========================
+         ML ANALYSIS
+    ========================== -->
+
+    <div class="row g-4 mb-4">
+
+
+        <!-- ML FORECAST -->
+
+        {% if predicted_total is not none %}
+
+        <div class="col-lg-6">
+
+            <div class="ml-card forecast-card">
+
+                <div class="ml-card-header">
+
+                    <div class="ml-card-icon">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h3 class="ml-card-title">
+
+                            ML Spending Forecast
+
+                        </h3>
+
+                        <div class="ml-card-subtitle">
+
+                            Machine-learning based prediction
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="forecast-value">
+
+                    ₹{{ predicted_total }}
+
+                </div>
+
+
+                <p class="ml-description">
+
+                    Estimated spending for the next 30 days based on
+                    your historical spending patterns.
+
+                </p>
+
+
+                <div class="ml-note">
+
+                    <i class="fa-solid fa-circle-info"></i>
+
+                    Generated using your expense history.
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+
+        <!-- ML ANOMALIES -->
+
+        <div class="col-lg-6">
+
+            <div class="ml-card anomaly-card">
+
+                <div class="ml-card-header">
+
+                    <div class="ml-card-icon">
+
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h3 class="ml-card-title">
+
+                            Unusual Expenses
+
+                        </h3>
+
+                        <div class="ml-card-subtitle">
+
+                            ML anomaly detection
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {% if anomalies %}
+
+                    <div class="anomaly-summary">
+
+                        ML detected
+                        <strong>{{ anomaly_count }}</strong>
+                        unusual expense(s) in your recorded spending.
+
+                    </div>
+
+
+                    <ul class="anomaly-list">
+
+                        {% for anomaly in anomalies %}
+
+                        <li class="anomaly-item">
+
+                            <div class="anomaly-left">
+
+                                <div class="anomaly-category">
+
+                                    {{ anomaly.category }}
+
+                                </div>
+
+
+                                {% if anomaly.description %}
+
+                                <div class="anomaly-description">
+
+                                    {{ anomaly.description }}
+
+                                </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="anomaly-right">
+
+                                <div class="anomaly-amount">
+
+                                    ₹{{ anomaly.amount }}
+
+                                </div>
+
+
+                                <div class="anomaly-date">
+
+                                    {{ anomaly.date }}
+
+                                </div>
+
+                            </div>
+
+                        </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                {% else %}
+
+                    <div class="no-anomaly">
+
+                        <i class="fa-solid fa-circle-check me-2"></i>
+
+                        No unusual spending pattern was detected
+                        in the available expense history.
+
+                    </div>
+
+                {% endif %}
+
+            </div>
 
         </div>
 
     </div>
 
-    <!-- BACK BUTTON -->
+
+
+    <!-- =========================
+         BACK BUTTON
+    ========================== -->
 
     <div class="text-center">
 
@@ -571,7 +1261,9 @@
 
     </div>
 
+
 </div>
+
 
 </body>
 
