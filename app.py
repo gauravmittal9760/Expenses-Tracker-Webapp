@@ -44,9 +44,6 @@ print("NEW APP RUNNING")
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-os.makedirs("static/profile_pics", exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
