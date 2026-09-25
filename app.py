@@ -84,6 +84,32 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 db = SQLAlchemy(app)
 
+# ---------------------------------------------------------
+# FIX: Postgres always stores "timestamptz" columns as UTC
+# internally. When it sends a row back, it converts that UTC
+# instant into whatever timezone the *session* is set to —
+# and by default that is UTC. That's why login_time /
+# created_at / action_time were showing up 5 hours 30 minutes
+# "behind": the values were correct, they were just being
+# displayed in UTC instead of IST.
+#
+# This forces every new DB connection's session timezone to
+# Asia/Kolkata, so Postgres itself converts the stored UTC
+# instant to IST before sending it back. No template or query
+# changes needed — record.login_time etc. will now already be
+# in IST when you read it.
+# ---------------------------------------------------------
+from sqlalchemy import event
+
+with app.app_context():
+
+    @event.listens_for(db.engine, "connect")
+    def set_postgres_session_timezone(dbapi_connection, connection_record):
+        if database_url:  # only Postgres understands SET TIME ZONE, not SQLite
+            cursor = dbapi_connection.cursor()
+            cursor.execute("SET TIME ZONE 'Asia/Kolkata';")
+            cursor.close()
+
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 
@@ -5044,4 +5070,3 @@ with app.app_context():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
