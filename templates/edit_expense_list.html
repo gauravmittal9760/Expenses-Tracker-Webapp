@@ -10,15 +10,15 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>
-        Edit Expense
-    </title>
+    <title>Edit Expenses | SpendWise</title>
 
+    <!-- Bootstrap -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
+    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -26,303 +26,1090 @@
 
     <style>
 
+        * {
+            box-sizing: border-box;
+        }
+
+
+        /* ==============================
+           BODY
+        ============================== */
+
         body {
 
-            background:
-                radial-gradient(circle at top right, #1b2735 0%, #090a0f 45%, #050608 100%);
+            margin: 0;
 
             min-height: 100vh;
 
-            color: white;
+            color: #f8fafc;
+
+            font-family:
+                Inter,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background:
+
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(245,158,11,0.14),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(59,130,246,0.12),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #020617 0%,
+                    #0b1120 45%,
+                    #111827 100%
+                );
 
             overflow-x: hidden;
 
         }
 
-        .page-title {
 
-            font-size: 42px;
+        /* ==============================
+           BACKGROUND GLOW
+        ============================== */
 
-            font-weight: 800;
+        .background-glow {
+
+            position: fixed;
+
+            width: 420px;
+
+            height: 420px;
+
+            border-radius: 50%;
+
+            filter: blur(120px);
+
+            pointer-events: none;
+
+            z-index: -1;
+
+            opacity: 0.18;
+
+        }
+
+        .glow-one {
+
+            top: -180px;
+
+            left: -150px;
+
+            background: #f59e0b;
+
+        }
+
+        .glow-two {
+
+            bottom: -180px;
+
+            right: -150px;
+
+            background: #2563eb;
+
+        }
+
+
+        /* ==============================
+           MAIN WRAPPER
+        ============================== */
+
+        .page-wrapper {
+
+            width: 100%;
+
+            max-width: 1250px;
+
+            margin: 0 auto;
+
+            padding: 55px 22px 70px;
+
+        }
+
+
+        /* ==============================
+           HEADER
+        ============================== */
+
+        .hero {
 
             text-align: center;
 
-            margin-bottom: 35px;
+            margin-bottom: 42px;
 
-            background: linear-gradient(90deg, #ffc107, #ff7b00);
+        }
+
+
+        .hero-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            padding: 9px 18px;
+
+            margin-bottom: 18px;
+
+            border-radius: 999px;
+
+            background:
+                rgba(245,158,11,0.10);
+
+            border:
+                1px solid rgba(245,158,11,0.28);
+
+            color: #fbbf24;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.5px;
+
+            box-shadow:
+                0 0 25px rgba(245,158,11,0.07);
+
+        }
+
+
+        .hero-title {
+
+            margin: 0;
+
+            font-size: clamp(34px, 5vw, 52px);
+
+            line-height: 1.1;
+
+            font-weight: 900;
+
+            letter-spacing: -1px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #fde68a,
+                    #fbbf24,
+                    #fb923c
+                );
 
             -webkit-background-clip: text;
 
+            background-clip: text;
+
             -webkit-text-fill-color: transparent;
 
-            text-shadow: 0 0 25px rgba(255,193,7,0.25);
+        }
+
+
+        .hero-title i {
+
+            font-size: 0.78em;
+
+            margin-right: 8px;
 
         }
 
-        .glass-card {
 
-            background: rgba(20, 20, 20, 0.72);
+        .hero-subtitle {
 
-            backdrop-filter: blur(18px);
+            margin: 14px auto 0;
 
-            border: 1px solid rgba(255,255,255,0.08);
+            max-width: 650px;
 
-            border-radius: 28px;
-
-            box-shadow:
-                0 0 30px rgba(0,0,0,0.45),
-                0 0 80px rgba(255,193,7,0.08);
-
-            overflow: hidden;
-
-        }
-
-        .table {
-
-            margin-bottom: 0;
-
-            border-collapse: separate;
-
-            border-spacing: 0 14px;
-
-        }
-
-        .table thead th {
-
-            border: none;
-
-            background: transparent;
-
-            color: #ffc107;
-
-            font-size: 15px;
-
-            font-weight: 700;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1px;
-
-            padding-bottom: 10px;
-
-        }
-
-        .table tbody tr {
-
-            background: rgba(255,255,255,0.04);
-
-            transition: 0.3s ease;
-
-            border-radius: 18px;
-
-        }
-
-        .table tbody tr:hover {
-
-            transform: translateY(-4px);
-
-            background: rgba(255,193,7,0.08);
-
-            box-shadow:
-                0 10px 25px rgba(0,0,0,0.35);
-
-        }
-
-        .table td {
-
-            border: none;
-
-            vertical-align: middle;
-
-            padding: 18px 16px;
-
-            color: #f1f1f1;
-
-            font-size: 15px;
-
-        }
-
-        .category-badge {
-
-            background: rgba(255,193,7,0.15);
-
-            color: #ffc107;
-
-            padding: 8px 16px;
-
-            border-radius: 50px;
-
-            font-weight: 600;
-
-            display: inline-block;
-
-        }
-
-        .amount-text {
-
-            color: #00e676;
-
-            font-weight: 700;
+            color: #cbd5e1;
 
             font-size: 16px;
 
-        }
-
-        .date-box {
-
-            color: #cfcfcf;
-
-            font-weight: 500;
+            line-height: 1.7;
 
         }
 
-        .edit-btn {
 
-            background: linear-gradient(135deg, #ffc107, #ff9800);
+        /* ==============================
+           MAIN CARD
+        ============================== */
 
-            border: none;
+        .expenses-container {
 
-            border-radius: 12px;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(30,41,59,0.88),
+                    rgba(15,23,42,0.82)
+                );
 
-            padding: 10px 20px;
+            border:
+                1px solid rgba(148,163,184,0.14);
 
-            font-weight: 700;
+            border-radius: 28px;
 
-            color: black;
-
-            transition: 0.3s ease;
-
-            text-decoration: none;
-
-            display: inline-block;
-
-        }
-
-        .edit-btn:hover {
-
-            transform: scale(1.06);
+            padding: 28px;
 
             box-shadow:
-                0 0 18px rgba(255,193,7,0.4);
+                0 25px 80px rgba(0,0,0,0.38),
+                inset 0 1px 0 rgba(255,255,255,0.04);
 
-            color: black;
-
-        }
-
-        .bottom-btn {
-
-            background: linear-gradient(135deg, #ff3c3c, #c40000);
-
-            border: none;
-
-            border-radius: 14px;
-
-            padding: 13px;
-
-            font-size: 17px;
-
-            font-weight: 700;
-
-            transition: 0.3s ease;
+            backdrop-filter: blur(22px);
 
         }
 
-        .bottom-btn:hover {
 
-            transform: translateY(-2px);
+        /* ==============================
+           CARD HEADER
+        ============================== */
+
+        .card-header-custom {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 4px 4px 24px;
+
+            border-bottom:
+                1px solid rgba(148,163,184,0.12);
+
+        }
+
+
+        .section-heading {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            margin: 0;
+
+            color: #f8fafc;
+
+            font-size: 21px;
+
+            font-weight: 800;
+
+        }
+
+
+        .section-icon {
+
+            width: 43px;
+
+            height: 43px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 13px;
+
+            color: #fbbf24;
+
+            background:
+                rgba(245,158,11,0.12);
+
+            border:
+                1px solid rgba(245,158,11,0.22);
 
             box-shadow:
-                0 0 20px rgba(255,0,0,0.35);
+                0 0 25px rgba(245,158,11,0.08);
 
         }
 
-        .table-responsive {
 
-            border-radius: 22px;
+        .section-description {
+
+            margin: 5px 0 0 56px;
+
+            color: #94a3b8;
+
+            font-size: 13px;
 
         }
 
-        .empty-box {
 
-            background: rgba(255,255,255,0.05);
+        /* ==============================
+           DESKTOP TABLE HEADER
+        ============================== */
+
+        .table-head {
+
+            display: grid;
+
+            grid-template-columns:
+                110px
+                minmax(180px, 1.5fr)
+                minmax(130px, 0.8fr)
+                minmax(140px, 0.9fr)
+                115px;
+
+            gap: 18px;
+
+            align-items: center;
+
+            margin-top: 25px;
+
+            padding: 0 22px 10px;
+
+        }
+
+
+        .table-head span {
+
+            color: #94a3b8;
+
+            font-size: 11px;
+
+            font-weight: 800;
+
+            letter-spacing: 1.2px;
+
+            text-transform: uppercase;
+
+        }
+
+
+        /* ==============================
+           EXPENSE ROW
+        ============================== */
+
+        .expense-row {
+
+            display: grid;
+
+            grid-template-columns:
+                110px
+                minmax(180px, 1.5fr)
+                minmax(130px, 0.8fr)
+                minmax(140px, 0.9fr)
+                115px;
+
+            gap: 18px;
+
+            align-items: center;
+
+            min-height: 104px;
+
+            margin-bottom: 13px;
+
+            padding: 16px 22px;
 
             border-radius: 20px;
 
-            padding: 40px;
+            background:
+                rgba(30,41,59,0.72);
 
-            text-align: center;
+            border:
+                1px solid rgba(148,163,184,0.10);
 
-            color: #d0d0d0;
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.18);
 
-            border: 1px dashed rgba(255,255,255,0.12);
+            transition:
+                transform 0.25s ease,
+                border-color 0.25s ease,
+                background 0.25s ease,
+                box-shadow 0.25s ease;
 
         }
+
+
+        .expense-row:hover {
+
+            transform: translateY(-3px);
+
+            background:
+                rgba(51,65,85,0.72);
+
+            border-color:
+                rgba(245,158,11,0.28);
+
+            box-shadow:
+                0 14px 35px rgba(0,0,0,0.30),
+                0 0 25px rgba(245,158,11,0.05);
+
+        }
+
+
+        /* ==============================
+           IMAGE
+        ============================== */
+
+        .preview-wrapper {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: flex-start;
+
+        }
+
 
         .expense-preview {
 
-            width: 70px;
+            width: 68px;
 
-            height: 70px;
+            height: 68px;
 
             object-fit: cover;
 
-            border-radius: 14px;
+            display: block;
 
-            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
 
-            transition: 0.3s ease;
+            border:
+                1px solid rgba(255,255,255,0.12);
+
+            background: #0f172a;
+
+            box-shadow:
+                0 7px 20px rgba(0,0,0,0.30);
+
+            transition:
+                transform 0.25s ease,
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
 
         }
+
 
         .expense-preview:hover {
 
-            transform: scale(1.08);
+            transform: scale(1.06);
 
-            border-color: #ffc107;
+            border-color: #fbbf24;
 
             box-shadow:
-                0 0 15px rgba(255,193,7,0.3);
+                0 0 25px rgba(251,191,36,0.20);
 
         }
 
-        @media (max-width: 768px) {
 
-            .page-title {
+        .image-placeholder {
 
-                font-size: 32px;
+            display: flex;
 
-            }
+            align-items: center;
 
-            .table td {
+            justify-content: center;
 
-                font-size: 14px;
+            color: #64748b;
 
-                padding: 14px 10px;
+            font-size: 23px;
 
-            }
-
-            .edit-btn {
-
-                width: 100%;
-
-                text-align: center;
-
-            }
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(51,65,85,0.70),
+                    rgba(15,23,42,0.80)
+                );
 
         }
+
+
+        /* ==============================
+           CATEGORY
+        ============================== */
+
+        .category-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            max-width: 100%;
+
+            padding: 8px 14px;
+
+            border-radius: 999px;
+
+            color: #fcd34d;
+
+            background:
+                rgba(245,158,11,0.12);
+
+            border:
+                1px solid rgba(245,158,11,0.22);
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+        }
+
+
+        .category-badge i {
+
+            font-size: 11px;
+
+        }
+
+
+        /* ==============================
+           AMOUNT
+        ============================== */
+
+        .amount-wrapper {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+
+        .amount-icon {
+
+            color: #4ade80;
+
+            font-size: 15px;
+
+        }
+
+
+        .amount-text {
+
+            color: #4ade80;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+            white-space: nowrap;
+
+        }
+
+
+        /* ==============================
+           DATE
+        ============================== */
+
+        .date-box {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            color: #e2e8f0;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            white-space: nowrap;
+
+        }
+
+
+        .date-box i {
+
+            color: #60a5fa;
+
+        }
+
+
+        /* ==============================
+           EDIT BUTTON
+        ============================== */
+
+        .edit-btn {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            min-width: 100px;
+
+            padding: 11px 17px;
+
+            border-radius: 12px;
+
+            color: #111827;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fbbf24,
+                    #f59e0b
+                );
+
+            border: none;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            font-weight: 800;
+
+            box-shadow:
+                0 7px 18px rgba(245,158,11,0.16);
+
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                filter 0.25s ease;
+
+        }
+
+
+        .edit-btn:hover {
+
+            color: #111827;
+
+            transform: translateY(-2px);
+
+            filter: brightness(1.08);
+
+            box-shadow:
+                0 12px 25px rgba(245,158,11,0.28);
+
+        }
+
+
+        .edit-btn:active {
+
+            transform: translateY(0);
+
+        }
+
+
+        /* ==============================
+           EMPTY STATE
+        ============================== */
+
+        .empty-box {
+
+            margin-top: 25px;
+
+            padding: 70px 25px;
+
+            text-align: center;
+
+            border-radius: 22px;
+
+            background:
+                rgba(15,23,42,0.60);
+
+            border:
+                1px dashed rgba(148,163,184,0.22);
+
+        }
+
+
+        .empty-icon {
+
+            width: 72px;
+
+            height: 72px;
+
+            margin: 0 auto 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 22px;
+
+            color: #64748b;
+
+            background:
+                rgba(100,116,139,0.10);
+
+            font-size: 28px;
+
+        }
+
+
+        .empty-box h4 {
+
+            color: #f8fafc;
+
+            font-weight: 800;
+
+        }
+
+
+        .empty-box p {
+
+            color: #94a3b8;
+
+            margin-bottom: 0;
+
+        }
+
+
+        /* ==============================
+           BACK BUTTON
+        ============================== */
+
+        .bottom-btn {
+
+            width: 100%;
+
+            min-height: 56px;
+
+            margin-top: 25px;
+
+            border: none;
+
+            border-radius: 15px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            color: #ffffff !important;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ef4444,
+                    #dc2626
+                );
+
+            font-size: 16px;
+
+            font-weight: 800;
+
+            text-decoration: none;
+
+            box-shadow:
+                0 10px 25px rgba(220,38,38,0.15);
+
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                filter 0.25s ease;
+
+        }
+
+
+        .bottom-btn:hover {
+
+            color: #ffffff !important;
+
+            transform: translateY(-2px);
+
+            filter: brightness(1.08);
+
+            box-shadow:
+                0 15px 30px rgba(220,38,38,0.25);
+
+        }
+
+
+        /* ==============================
+           AUTOFILL FIX
+        ============================== */
 
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus,
         input:-webkit-autofill:active {
 
-            -webkit-box-shadow: 0 0 0px 1000px #111827 inset !important;
+            -webkit-box-shadow:
+                0 0 0 1000px #111827 inset !important;
 
-            -webkit-text-fill-color: white !important;
+            -webkit-text-fill-color:
+                #ffffff !important;
 
-            caret-color: white;
+            caret-color:
+                #ffffff;
 
-            transition: background-color 9999s ease-in-out 0s;
+            transition:
+                background-color 9999s ease-in-out 0s;
+
+        }
+
+
+        /* ==============================
+           TABLET
+        ============================== */
+
+        @media (max-width: 1000px) {
+
+            .table-head {
+
+                grid-template-columns:
+                    90px
+                    minmax(150px, 1.4fr)
+                    minmax(110px, 0.8fr)
+                    minmax(120px, 0.8fr)
+                    100px;
+
+                gap: 12px;
+
+                padding-left: 14px;
+
+                padding-right: 14px;
+
+            }
+
+
+            .expense-row {
+
+                grid-template-columns:
+                    90px
+                    minmax(150px, 1.4fr)
+                    minmax(110px, 0.8fr)
+                    minmax(120px, 0.8fr)
+                    100px;
+
+                gap: 12px;
+
+                padding-left: 14px;
+
+                padding-right: 14px;
+
+            }
+
+        }
+
+
+        /* ==============================
+           MOBILE
+        ============================== */
+
+        @media (max-width: 767px) {
+
+            .page-wrapper {
+
+                padding:
+                    35px 14px 50px;
+
+            }
+
+
+            .expenses-container {
+
+                padding: 18px;
+
+                border-radius: 22px;
+
+            }
+
+
+            .hero {
+
+                margin-bottom: 28px;
+
+            }
+
+
+            .hero-title {
+
+                font-size: 34px;
+
+            }
+
+
+            .hero-subtitle {
+
+                font-size: 14px;
+
+            }
+
+
+            .card-header-custom {
+
+                align-items: flex-start;
+
+            }
+
+
+            .section-heading {
+
+                font-size: 18px;
+
+            }
+
+
+            .section-description {
+
+                margin-left: 0;
+
+                margin-top: 8px;
+
+            }
+
+
+            /* Hide desktop heading on mobile */
+
+            .table-head {
+
+                display: none;
+
+            }
+
+
+            /* Convert each row into a card */
+
+            .expense-row {
+
+                display: grid;
+
+                grid-template-columns:
+                    80px
+                    1fr;
+
+                gap: 16px;
+
+                padding: 18px;
+
+                min-height: auto;
+
+            }
+
+
+            .preview-wrapper {
+
+                grid-row: span 4;
+
+            }
+
+
+            .expense-preview {
+
+                width: 76px;
+
+                height: 76px;
+
+            }
+
+
+            .category-badge {
+
+                font-size: 13px;
+
+            }
+
+
+            .amount-text {
+
+                font-size: 16px;
+
+            }
+
+
+            .date-box {
+
+                font-size: 13px;
+
+            }
+
+
+            .edit-btn {
+
+                width: 100%;
+
+                min-width: 0;
+
+            }
+
+        }
+
+
+        /* ==============================
+           SMALL MOBILE
+        ============================== */
+
+        @media (max-width: 430px) {
+
+            .page-wrapper {
+
+                padding-left: 10px;
+
+                padding-right: 10px;
+
+            }
+
+
+            .expenses-container {
+
+                padding: 13px;
+
+            }
+
+
+            .expense-row {
+
+                grid-template-columns:
+                    68px
+                    1fr;
+
+                gap: 13px;
+
+                padding: 15px;
+
+            }
+
+
+            .expense-preview {
+
+                width: 64px;
+
+                height: 64px;
+
+            }
+
+
+            .hero-title {
+
+                font-size: 30px;
+
+            }
+
+
+            .hero-badge {
+
+                font-size: 11px;
+
+                padding: 8px 13px;
+
+            }
 
         }
 
@@ -330,169 +1117,316 @@
 
 </head>
 
+
 <body>
 
-<div class="container py-5">
 
-    <h1 class="page-title">
+<!-- Background Effects -->
 
-        <i class="fa-solid fa-pen-to-square"></i>
+<div class="background-glow glow-one"></div>
 
-        Edit Expenses
+<div class="background-glow glow-two"></div>
 
-    </h1>
 
-    <div class="glass-card p-4 p-lg-5">
+<div class="page-wrapper">
 
-        {% if expenses %}
 
-        <div class="table-responsive">
+    <!-- ==============================
+         PAGE HEADER
+    ============================== -->
 
-            <table class="table align-middle text-center">
+    <div class="hero">
 
-                <thead>
+        <div class="hero-badge">
 
-                    <tr>
+            <i class="fa-solid fa-pen-to-square"></i>
 
-                        <th>
-                            Preview
-                        </th>
-
-                        <th>
-                            Category
-                        </th>
-
-                        <th>
-                            Amount
-                        </th>
-
-                        <th>
-                            Date
-                        </th>
-
-                        <th>
-                            Action
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {% for expense in expenses %}
-
-                    <tr>
-
-                        <td>
-
-                            {% if expense.images %}
-
-                                {% set image_list = expense.images | from_json %}
-
-                                {% if image_list and image_list|length > 0 %}
-
-                                    <img
-
-                                        src="{{ url_for(
-                                            'static',
-                                            filename='uploads/' + image_list[0]
-                                        ) }}"
-
-                                        class="expense-preview"
-                                    >
-
-                                {% endif %}
-
-                            {% elif expense.images %}
-
-                                <img
-
-                                    src="{{ url_for(
-                                        'static',
-                                        filename='uploads/' + expense.images
-                                    ) }}"
-
-                                    class="expense-preview"
-                                >
-
-                            {% else %}
-
-                                <div
-                                    class="expense-preview d-flex align-items-center justify-content-center"
-                                    style="
-                                        background:rgba(255,255,255,0.05);
-                                        font-size:22px;
-                                        color:#777;
-                                    "
-                                >
-
-                                    <i class="fa-regular fa-image"></i>
-
-                                </div>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            <span class="category-badge">
-
-                                {{ expense.category }}
-
-                            </span>
-
-                        </td>
-
-                        <td>
-
-                            <span class="amount-text">
-
-                                ₹{{ expense.amount }}
-
-                            </span>
-
-                        </td>
-
-                        <td>
-
-                            <span class="date-box">
-
-                                {{ expense.date }}
-
-                            </span>
-
-                        </td>
-
-                        <td>
-
-                            <a
-                                href="{{ url_for('edit_expense', id=expense.id) }}"
-                                class="edit-btn"
-                            >
-
-                                <i class="fa-solid fa-pen"></i>
-
-                                Edit
-
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
+            Expense Management
 
         </div>
 
+
+        <h1 class="hero-title">
+
+            <i class="fa-solid fa-file-pen"></i>
+
+            Edit Expenses
+
+        </h1>
+
+
+        <p class="hero-subtitle">
+
+            Select any expense below to update its details,
+
+            amount, category, date or other information.
+
+        </p>
+
+    </div>
+
+
+    <!-- ==============================
+         MAIN EXPENSE CONTAINER
+    ============================== -->
+
+    <div class="expenses-container">
+
+
+        <!-- CARD HEADER -->
+
+        <div class="card-header-custom">
+
+            <div>
+
+                <h2 class="section-heading">
+
+                    <span class="section-icon">
+
+                        <i class="fa-solid fa-list-check"></i>
+
+                    </span>
+
+                    Your Expense Records
+
+                </h2>
+
+
+                <p class="section-description">
+
+                    Choose an expense to make changes.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if expenses %}
+
+
+        <!-- ==============================
+             TABLE HEADER
+        ============================== -->
+
+        <div class="table-head">
+
+            <span>
+                Preview
+            </span>
+
+            <span>
+                Category
+            </span>
+
+            <span>
+                Amount
+            </span>
+
+            <span>
+                Date
+            </span>
+
+            <span>
+                Action
+            </span>
+
+        </div>
+
+
+        <!-- ==============================
+             EXPENSE LIST
+        ============================== -->
+
+        <div class="expense-list">
+
+
+            {% for expense in expenses %}
+
+
+            <div class="expense-row">
+
+
+                <!-- ==========================
+                     IMAGE PREVIEW
+                =========================== -->
+
+                <div class="preview-wrapper">
+
+
+                    {% if expense.images %}
+
+
+                        {% set image_list = expense.images | from_json %}
+
+
+                        {% if image_list and image_list|length > 0 %}
+
+
+                            <img
+
+                                src="{{ url_for(
+                                    'static',
+                                    filename='uploads/' + image_list[0]
+                                ) }}"
+
+                                class="expense-preview"
+
+                                alt="Expense image"
+
+                            >
+
+
+                        {% endif %}
+
+
+                    {% elif expense.images %}
+
+
+                        <img
+
+                            src="{{ url_for(
+                                'static',
+                                filename='uploads/' + expense.images
+                            ) }}"
+
+                            class="expense-preview"
+
+                            alt="Expense image"
+
+                        >
+
+
+                    {% else %}
+
+
+                        <div
+                            class="
+                                expense-preview
+                                image-placeholder
+                            "
+                        >
+
+                            <i class="fa-regular fa-image"></i>
+
+                        </div>
+
+
+                    {% endif %}
+
+
+                </div>
+
+
+                <!-- ==========================
+                     CATEGORY
+                =========================== -->
+
+                <div>
+
+                    <span class="category-badge">
+
+                        <i class="fa-solid fa-tag"></i>
+
+                        {{ expense.category }}
+
+                    </span>
+
+                </div>
+
+
+                <!-- ==========================
+                     AMOUNT
+                =========================== -->
+
+                <div class="amount-wrapper">
+
+                    <i
+                        class="
+                            fa-solid
+                            fa-indian-rupee-sign
+                            amount-icon
+                        "
+                    ></i>
+
+                    <span class="amount-text">
+
+                        ₹{{ expense.amount }}
+
+                    </span>
+
+                </div>
+
+
+                <!-- ==========================
+                     DATE
+                =========================== -->
+
+                <div>
+
+                    <span class="date-box">
+
+                        <i class="fa-regular fa-calendar"></i>
+
+                        {{ expense.date }}
+
+                    </span>
+
+                </div>
+
+
+                <!-- ==========================
+                     EDIT ACTION
+                =========================== -->
+
+                <div>
+
+                    <a
+
+                        href="{{ url_for(
+                            'edit_expense',
+                            id=expense.id
+                        ) }}"
+
+                        class="edit-btn"
+
+                    >
+
+                        <i class="fa-solid fa-pen"></i>
+
+                        Edit
+
+                    </a>
+
+                </div>
+
+
+            </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
         {% else %}
 
+
+        <!-- ==============================
+             EMPTY STATE
+        ============================== -->
+
         <div class="empty-box">
+
+
+            <div class="empty-icon">
+
+                <i class="fa-regular fa-folder-open"></i>
+
+            </div>
+
 
             <h4 class="mb-3">
 
@@ -500,34 +1434,46 @@
 
             </h4>
 
-            <p class="mb-0">
 
-                Your editable expenses will appear here.
+            <p>
+
+                Your editable expenses will appear here
+
+                once you add some expenses.
 
             </p>
 
+
         </div>
+
 
         {% endif %}
 
-        <div class="d-grid mt-4">
 
-            <a
-                href="/expense_management"
-                class="btn bottom-btn text-white"
-            >
+        <!-- ==============================
+             BACK BUTTON
+        ============================== -->
 
-                <i class="fa-solid fa-arrow-left"></i>
+        <a
 
-                Back
+            href="/expense_management"
 
-            </a>
+            class="bottom-btn"
 
-        </div>
+        >
+
+            <i class="fa-solid fa-arrow-left"></i>
+
+            Back to Expense Management
+
+        </a>
+
 
     </div>
 
+
 </div>
+
 
 </body>
 

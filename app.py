@@ -5146,10 +5146,5 @@ def check_db_columns():
     )
 
 
-with app.app_context():
-    print("BBB CREATE ALL START")
-    db.create_all()
-    print("BBB CREATE ALL DONE")
-
 if __name__ == "__main__":
     app.run(debug=True)
