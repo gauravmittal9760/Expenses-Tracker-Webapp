@@ -84,21 +84,6 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 db = SQLAlchemy(app)
 
-# ---------------------------------------------------------
-# FIX: Postgres always stores "timestamptz" columns as UTC
-# internally. When it sends a row back, it converts that UTC
-# instant into whatever timezone the *session* is set to —
-# and by default that is UTC. That's why login_time /
-# created_at / action_time were showing up 5 hours 30 minutes
-# "behind": the values were correct, they were just being
-# displayed in UTC instead of IST.
-#
-# This forces every new DB connection's session timezone to
-# Asia/Kolkata, so Postgres itself converts the stored UTC
-# instant to IST before sending it back. No template or query
-# changes needed — record.login_time etc. will now already be
-# in IST when you read it.
-# ---------------------------------------------------------
 from sqlalchemy import event
 
 with app.app_context():
@@ -109,6 +94,7 @@ with app.app_context():
             cursor = dbapi_connection.cursor()
             cursor.execute("SET TIME ZONE 'Asia/Kolkata';")
             cursor.close()
+            dbapi_connection.commit()
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -1963,7 +1949,6 @@ def analytics_menu():
 
 @app.route("/expense_charts")
 def expense_charts():
-
     if "user_id" not in session:
         return redirect("/")
 
@@ -1971,38 +1956,137 @@ def expense_charts():
         user_id=session["user_id"]
     ).all()
 
-    category_totals = {}
+    # ---------------------------------------------------------
+    # CHART DATA
+    # ---------------------------------------------------------
+    # The old version combined every expense into one category
+    # chart. That is fine for a small dataset, but becomes hard
+    # to read when expenses span many months.
+    #
+    # New behavior:
+    # 1. Monthly trend = one value per month (never one point
+    #    per transaction).
+    # 2. Category charts = only the selected month.
+    # 3. "All Time" is available when the user wants the full
+    #    history.
+    # ---------------------------------------------------------
+
+    monthly_totals = {}
+    monthly_category_totals = {}
 
     for expense in expenses:
+        if not expense.date:
+            continue
 
-        if expense.category in category_totals:
+        expense_date = str(expense.date)
+        month_key = expense_date[:7]  # YYYY-MM
 
-            category_totals[
-                expense.category
-            ] += expense.amount
+        if len(month_key) != 7:
+            continue
 
-        else:
+        monthly_totals[month_key] = (
+            monthly_totals.get(month_key, 0) + float(expense.amount or 0)
+        )
 
-            category_totals[
-                expense.category
-            ] = expense.amount
+        if month_key not in monthly_category_totals:
+            monthly_category_totals[month_key] = {}
 
-    categories = list(
-        category_totals.keys()
-    )
+        category = expense.category or "Uncategorized"
 
-    amounts = list(
-        category_totals.values()
-    )
+        monthly_category_totals[month_key][category] = (
+            monthly_category_totals[month_key].get(category, 0)
+            + float(expense.amount or 0)
+        )
+
+    # Sort months chronologically.
+    available_months = sorted(monthly_totals.keys())
+
+    # Default to the latest month so a large history does not
+    # immediately produce an unreadable category chart.
+    requested_month = request.args.get("month", "").strip()
+
+    if requested_month == "all":
+        selected_month = "all"
+    elif requested_month in available_months:
+        selected_month = requested_month
+    elif available_months:
+        selected_month = available_months[-1]
+    else:
+        selected_month = "all"
+
+    # Monthly trend data.
+    months = available_months
+    monthly_amounts = [
+        round(monthly_totals[month], 2)
+        for month in months
+    ]
+
+    # Category data for selected month / all-time.
+    if selected_month == "all":
+        category_totals = {}
+
+        for month_data in monthly_category_totals.values():
+            for category, amount in month_data.items():
+                category_totals[category] = (
+                    category_totals.get(category, 0) + amount
+                )
+    else:
+        category_totals = monthly_category_totals.get(
+            selected_month,
+            {}
+        )
+
+    categories = list(category_totals.keys())
+    amounts = [
+        round(category_totals[category], 2)
+        for category in categories
+    ]
+
+    selected_total = round(sum(amounts), 2)
+
+    # Number of transactions in the selected period.
+    if selected_month == "all":
+        selected_transaction_count = len(expenses)
+    else:
+        selected_transaction_count = sum(
+            1
+            for expense in expenses
+            if expense.date
+            and str(expense.date)[:7] == selected_month
+        )
+
+    # Human-readable month labels for the UI.
+    month_labels = []
+
+    for month in months:
+        try:
+            month_labels.append(
+                datetime.strptime(
+                    month,
+                    "%Y-%m"
+                ).strftime("%b %Y")
+            )
+        except ValueError:
+            month_labels.append(month)
 
     return render_template(
-
         "expense_charts.html",
 
+        # Existing variable names are preserved so the
+        # template/backend functionality remains compatible.
         categories=categories,
+        amounts=amounts,
 
-        amounts=amounts
+        # New visualization data.
+        months=months,
+        month_labels=month_labels,
+        monthly_amounts=monthly_amounts,
+        available_months=available_months,
+        selected_month=selected_month,
+        selected_total=selected_total,
+        selected_transaction_count=selected_transaction_count
     )
+
 
 @app.route("/expense_statistics")
 def expense_statistics():
@@ -5060,7 +5144,6 @@ def check_db_columns():
         f"{row.column_name} : {row.data_type}"
         for row in result
     )
-
 
 
 with app.app_context():

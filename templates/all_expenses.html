@@ -1,17 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
-    <title>
-        All Expenses
-    </title>
+    <meta charset="UTF-8">
 
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>All Expenses | SpendWise</title>
+
+    <!-- Bootstrap -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
+    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -19,32 +26,159 @@
 
     <style>
 
+        /* =========================================================
+           GLOBAL
+        ========================================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
 
-            background:
-                radial-gradient(circle at top left, #111827 0%, #0f172a 45%, #020617 100%);
+            margin: 0;
 
             min-height: 100vh;
 
-            color: white;
-
             overflow-x: hidden;
 
+            font-family:
+                Inter,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+
+            color: #f8fafc;
+
+            background:
+                radial-gradient(
+                    circle at 15% 10%,
+                    rgba(37, 99, 235, 0.20),
+                    transparent 32%
+                ),
+                radial-gradient(
+                    circle at 85% 85%,
+                    rgba(14, 165, 233, 0.14),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    135deg,
+                    #020617 0%,
+                    #08111f 45%,
+                    #030712 100%
+                );
+
         }
+
+
+        /* =========================================================
+           BACKGROUND GLOW
+        ========================================================= */
+
+        .background-orb {
+
+            position: fixed;
+
+            border-radius: 50%;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+            filter: blur(100px);
+
+            opacity: 0.18;
+
+        }
+
+
+        .orb-one {
+
+            width: 360px;
+
+            height: 360px;
+
+            top: -140px;
+
+            left: -120px;
+
+            background: #2563eb;
+
+        }
+
+
+        .orb-two {
+
+            width: 330px;
+
+            height: 330px;
+
+            right: -120px;
+
+            bottom: -100px;
+
+            background: #06b6d4;
+
+        }
+
+
+        .orb-three {
+
+            width: 220px;
+
+            height: 220px;
+
+            top: 45%;
+
+            left: 45%;
+
+            background: #4f46e5;
+
+            opacity: 0.07;
+
+        }
+
+
+        /* =========================================================
+           PAGE WRAPPER
+        ========================================================= */
 
         .page-wrapper {
 
-            padding: 45px 15px;
+            position: relative;
+
+            z-index: 1;
+
+            width: 100%;
+
+            max-width: 1450px;
+
+            margin: auto;
+
+            padding:
+                55px 28px
+                70px;
 
         }
+
+
+        /* =========================================================
+           HERO
+        ========================================================= */
 
         .hero-section {
 
             text-align: center;
 
-            margin-bottom: 45px;
+            margin-bottom: 38px;
 
         }
+
 
         .hero-badge {
 
@@ -52,143 +186,355 @@
 
             align-items: center;
 
-            gap: 10px;
+            justify-content: center;
 
-            padding: 10px 22px;
+            gap: 9px;
 
-            border-radius: 50px;
+            padding: 9px 18px;
 
-            background: rgba(59,130,246,0.12);
+            border-radius: 999px;
 
-            border: 1px solid rgba(59,130,246,0.25);
+            background:
+                rgba(59, 130, 246, 0.10);
+
+            border:
+                1px solid rgba(96, 165, 250, 0.25);
 
             color: #93c5fd;
 
-            font-size: 14px;
+            font-size: 13px;
 
-            margin-bottom: 20px;
+            font-weight: 700;
+
+            letter-spacing: 0.5px;
+
+            box-shadow:
+                0 0 25px rgba(37, 99, 235, 0.08);
+
+            margin-bottom: 18px;
 
         }
 
+
+        .hero-badge i {
+
+            color: #60a5fa;
+
+            font-size: 14px;
+
+        }
+
+
         .hero-title {
 
-            font-size: 48px;
+            margin: 0;
 
-            font-weight: 800;
+            font-size: clamp(38px, 5vw, 58px);
 
-            background: linear-gradient(
-                90deg,
-                #60a5fa,
-                #38bdf8,
-                #818cf8
-            );
+            line-height: 1.05;
+
+            font-weight: 850;
+
+            letter-spacing: -1.5px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #60a5fa 0%,
+                    #38bdf8 45%,
+                    #818cf8 100%
+                );
 
             -webkit-background-clip: text;
 
             -webkit-text-fill-color: transparent;
 
-            margin-bottom: 12px;
+            background-clip: text;
 
         }
+
 
         .hero-subtitle {
 
-            color: #cbd5e1;
-
-            font-size: 17px;
-
-        }
-
-        .expenses-card {
-
-            background: rgba(30,41,59,0.82);
-
-            border: 1px solid rgba(255,255,255,0.08);
-
-            border-radius: 28px;
-
-            padding: 30px;
-
-            backdrop-filter: blur(18px);
-
-            box-shadow:
-                0 0 35px rgba(0,0,0,0.35);
-
-        }
-
-        .table {
+            margin-top: 15px;
 
             margin-bottom: 0;
 
-            border-collapse: separate;
+            color: #94a3b8;
 
-            border-spacing: 0 14px;
+            font-size: 16px;
+
+            font-weight: 500;
 
         }
+
+
+        /* =========================================================
+           MAIN CARD
+        ========================================================= */
+
+        .expenses-card {
+
+            position: relative;
+
+            width: 100%;
+
+            padding: 18px;
+
+            border-radius: 26px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(15, 23, 42, 0.96),
+                    rgba(15, 23, 42, 0.82)
+                );
+
+            border:
+                1px solid rgba(148, 163, 184, 0.13);
+
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.38),
+                inset 0 1px 0 rgba(255, 255, 255, 0.035);
+
+            backdrop-filter: blur(20px);
+
+        }
+
+
+        .expenses-card::before {
+
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+
+            left: 8%;
+
+            width: 84%;
+
+            height: 1px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(96, 165, 250, 0.55),
+                    transparent
+                );
+
+            opacity: 0.7;
+
+        }
+
+
+        /* =========================================================
+           TABLE CONTAINER
+        ========================================================= */
+
+        .table-responsive {
+
+            width: 100%;
+
+            overflow-x: auto;
+
+            border-radius: 18px;
+
+            scrollbar-width: thin;
+
+            scrollbar-color:
+                rgba(96, 165, 250, 0.35)
+                transparent;
+
+        }
+
+
+        .table-responsive::-webkit-scrollbar {
+
+            height: 7px;
+
+        }
+
+
+        .table-responsive::-webkit-scrollbar-track {
+
+            background: transparent;
+
+        }
+
+
+        .table-responsive::-webkit-scrollbar-thumb {
+
+            background:
+                rgba(96, 165, 250, 0.35);
+
+            border-radius: 50px;
+
+        }
+
+
+        /* =========================================================
+           TABLE
+        ========================================================= */
+
+        .table {
+
+            width: 100% !important;
+
+            min-width: 850px;
+
+            margin: 0 !important;
+
+            border-collapse: separate !important;
+
+            border-spacing: 0 10px !important;
+
+            --bs-table-bg: transparent !important;
+
+            --bs-table-color: #f8fafc !important;
+
+            color: #f8fafc !important;
+
+        }
+
+
+        /* =========================================================
+           TABLE HEADER
+        ========================================================= */
+
+        .table thead {
+
+            position: relative;
+
+        }
+
+
+        .table thead tr {
+
+            background:
+                rgba(30, 41, 59, 0.75);
+
+        }
+
 
         .table thead th {
 
             border: none !important;
 
-            color: #93c5fd;
+            padding:
+                16px 20px !important;
 
-            font-size: 15px;
+            color: #7dd3fc !important;
 
-            font-weight: 700;
+            background:
+                rgba(30, 41, 59, 0.75) !important;
 
-            padding-bottom: 18px;
+            font-size: 12px !important;
+
+            font-weight: 800 !important;
+
+            letter-spacing: 1.5px;
 
             text-transform: uppercase;
 
-            letter-spacing: 1px;
+            white-space: nowrap;
 
         }
+
+
+        .table thead th:first-child {
+
+            border-radius:
+                13px 0 0 13px;
+
+        }
+
+
+        .table thead th:last-child {
+
+            border-radius:
+                0 13px 13px 0;
+
+        }
+
+
+        /* =========================================================
+           TABLE ROW
+        ========================================================= */
 
         .table tbody tr {
 
-            background: rgba(15,23,42,0.88);
+            background:
+                rgba(30, 41, 59, 0.58) !important;
 
-            transition: 0.3s ease;
+            transition:
+                transform 0.25s ease,
+                background 0.25s ease,
+                box-shadow 0.25s ease;
 
         }
+
 
         .table tbody tr:hover {
 
-            transform: scale(1.01);
+            transform:
+                translateY(-2px);
 
-            background: rgba(30,41,59,1);
+            background:
+                rgba(37, 52, 75, 0.90) !important;
+
+            box-shadow:
+                0 12px 30px rgba(0, 0, 0, 0.20),
+                0 0 0 1px rgba(96, 165, 250, 0.08);
 
         }
+
+
+        /* =========================================================
+           TABLE CELLS
+        ========================================================= */
 
         .table tbody td {
 
             border: none !important;
 
-            vertical-align: middle;
+            padding:
+                17px 20px !important;
 
-            padding: 18px 16px;
+            vertical-align: middle !important;
 
-            color: #e2e8f0;
+            background:
+                rgba(30, 41, 59, 0.58) !important;
 
-            font-size: 15px;
+            color: #e2e8f0 !important;
+
+            font-size: 14px !important;
+
+            font-weight: 500;
 
         }
+
 
         .table tbody tr td:first-child {
 
-            border-top-left-radius: 16px;
-
-            border-bottom-left-radius: 16px;
+            border-radius:
+                15px 0 0 15px;
 
         }
+
 
         .table tbody tr td:last-child {
 
-            border-top-right-radius: 16px;
-
-            border-bottom-right-radius: 16px;
+            border-radius:
+                0 15px 15px 0;
 
         }
+
+
+        /* =========================================================
+           CATEGORY
+        ========================================================= */
 
         .category-badge {
 
@@ -198,345 +544,718 @@
 
             gap: 8px;
 
-            background: rgba(59,130,246,0.15);
+            min-width: 82px;
 
-            color: #93c5fd;
+            padding:
+                7px 13px;
 
-            padding: 8px 16px;
+            border-radius: 999px;
 
-            border-radius: 50px;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(59, 130, 246, 0.16),
+                    rgba(96, 165, 250, 0.07)
+                );
 
-            font-weight: 600;
+            border:
+                1px solid rgba(96, 165, 250, 0.16);
 
-        }
+            color: #bfdbfe !important;
 
-        .amount-box {
-
-            color: #4ade80;
+            font-size: 13px;
 
             font-weight: 700;
 
-            font-size: 16px;
+            white-space: nowrap;
+
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.03);
 
         }
 
-        .date-box {
 
-            color: #facc15;
+        .category-badge i {
 
-            font-weight: 600;
+            color: #60a5fa;
+
+            font-size: 11px;
 
         }
+
+
+        /* =========================================================
+           DESCRIPTION
+        ========================================================= */
 
         .description-box {
 
-            max-width: 350px;
+            max-width: 440px;
 
-            line-height: 1.6;
+            color: #dbeafe !important;
 
-            color: #cbd5e1;
+            font-size: 14px;
 
-        }
+            line-height: 1.55;
 
-        .empty-state {
+            font-weight: 500;
 
-            text-align: center;
-
-            padding: 60px 20px;
-
-            color: #cbd5e1;
+            word-break: break-word;
 
         }
 
-        .empty-state i {
 
-            font-size: 70px;
+        .description-box .text-secondary {
 
-            color: #475569;
-
-            margin-bottom: 20px;
+            color: #64748b !important;
 
         }
 
-        .back-btn {
 
-            margin-top: 35px;
+        /* =========================================================
+           AMOUNT
+        ========================================================= */
 
-            height: 56px;
+        .amount-box {
 
-            border-radius: 16px;
+            display: inline-flex;
 
-            font-size: 17px;
+            align-items: center;
 
-            font-weight: 700;
+            color: #4ade80 !important;
 
-            transition: 0.3s ease;
+            font-size: 15px;
+
+            font-weight: 800;
+
+            white-space: nowrap;
 
         }
 
-        .back-btn:hover {
 
-            transform: translateY(-3px);
+        .amount-box::before {
 
-        }
+            content: "";
 
-        .floating-blur {
+            width: 5px;
 
-            position: fixed;
+            height: 5px;
 
-            width: 320px;
-
-            height: 320px;
+            margin-right: 8px;
 
             border-radius: 50%;
 
-            filter: blur(110px);
+            background: #4ade80;
 
-            opacity: 0.15;
-
-            z-index: -1;
-
-        }
-
-        .blur-one {
-
-            background: #3b82f6;
-
-            top: -100px;
-
-            left: -80px;
+            box-shadow:
+                0 0 10px rgba(74, 222, 128, 0.55);
 
         }
 
-        .blur-two {
 
-            background: #22c55e;
+        /* =========================================================
+           DATE
+        ========================================================= */
 
-            bottom: -100px;
+        .date-box {
 
-            right: -80px;
+            display: inline-flex;
+
+            align-items: center;
+
+            color: #facc15 !important;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            white-space: nowrap;
 
         }
 
-        @media(max-width: 768px) {
+
+        .date-box i {
+
+            color: #fbbf24;
+
+            font-size: 13px;
+
+        }
+
+
+        /* =========================================================
+           EMPTY STATE
+        ========================================================= */
+
+        .empty-state {
+
+            min-height: 330px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 50px 20px;
+
+            color: #cbd5e1;
+
+        }
+
+
+        .empty-state-icon {
+
+            width: 82px;
+
+            height: 82px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 22px;
+
+            border-radius: 24px;
+
+            background:
+                rgba(59, 130, 246, 0.08);
+
+            border:
+                1px solid rgba(96, 165, 250, 0.13);
+
+            box-shadow:
+                0 15px 40px rgba(0,0,0,0.18);
+
+        }
+
+
+        .empty-state-icon i {
+
+            font-size: 35px;
+
+            color: #64748b;
+
+        }
+
+
+        .empty-state h3 {
+
+            color: #f1f5f9;
+
+            font-weight: 800;
+
+        }
+
+
+        .empty-state p {
+
+            color: #94a3b8;
+
+            margin-bottom: 0;
+
+        }
+
+
+        /* =========================================================
+           BACK BUTTON
+        ========================================================= */
+
+        .back-wrapper {
+
+            display: flex;
+
+            justify-content: center;
+
+            margin-top: 30px;
+
+        }
+
+
+        .back-btn {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            min-width: 180px;
+
+            height: 52px;
+
+            padding:
+                0 25px;
+
+            border: 1px solid rgba(248, 113, 113, 0.25);
+
+            border-radius: 15px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #dc2626,
+                    #b91c1c
+                );
+
+            color: white !important;
+
+            font-size: 14px;
+
+            font-weight: 800;
+
+            letter-spacing: 0.2px;
+
+            text-decoration: none;
+
+            box-shadow:
+                0 12px 30px rgba(220, 38, 38, 0.18);
+
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                filter 0.25s ease;
+
+        }
+
+
+        .back-btn:hover {
+
+            transform:
+                translateY(-3px);
+
+            color: white !important;
+
+            filter: brightness(1.08);
+
+            box-shadow:
+                0 18px 38px rgba(220, 38, 38, 0.28);
+
+        }
+
+
+        .back-btn i {
+
+            font-size: 13px;
+
+        }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @media (max-width: 768px) {
+
+            .page-wrapper {
+
+                padding:
+                    35px 14px
+                    50px;
+
+            }
+
+
+            .hero-section {
+
+                margin-bottom: 28px;
+
+            }
+
+
+            .hero-badge {
+
+                font-size: 11px;
+
+                padding:
+                    8px 14px;
+
+            }
+
 
             .hero-title {
 
-                font-size: 34px;
+                font-size: 38px;
+
+                letter-spacing: -1px;
 
             }
+
+
+            .hero-subtitle {
+
+                font-size: 14px;
+
+                line-height: 1.6;
+
+            }
+
 
             .expenses-card {
 
-                padding: 18px;
+                padding: 10px;
+
+                border-radius: 20px;
 
             }
 
+
+            .table {
+
+                min-width: 760px;
+
+            }
+
+
+            .table thead th {
+
+                padding:
+                    14px 15px !important;
+
+            }
+
+
+            .table tbody td {
+
+                padding:
+                    15px !important;
+
+            }
+
+
             .description-box {
 
-                max-width: 180px;
+                max-width: 280px;
+
+            }
+
+
+            .back-btn {
+
+                width: 100%;
+
+                max-width: 300px;
 
             }
 
         }
 
-        /* FIX AUTOFILL WHITE BACKGROUND ISSUE */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0px 1000px #111827 inset !important;
-    -webkit-text-fill-color: white !important;
-    caret-color: white;
-    transition: background-color 9999s ease-in-out 0s;
-}
+
+        /* =========================================================
+           SMALL MOBILE
+        ========================================================= */
+
+        @media (max-width: 480px) {
+
+            .hero-title {
+
+                font-size: 32px;
+
+            }
+
+
+            .hero-subtitle {
+
+                font-size: 13px;
+
+            }
+
+
+            .expenses-card {
+
+                padding: 7px;
+
+            }
+
+
+            .table {
+
+                min-width: 720px;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           AUTOFILL FIX
+        ========================================================= */
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+
+            -webkit-box-shadow:
+                0 0 0 1000px #111827 inset !important;
+
+            -webkit-text-fill-color:
+                white !important;
+
+            caret-color:
+                white;
+
+            transition:
+                background-color
+                9999s
+                ease-in-out
+                0s;
+
+        }
+
+
+        /* =========================================================
+           SELECTION
+        ========================================================= */
+
+        ::selection {
+
+            background:
+                rgba(59, 130, 246, 0.35);
+
+            color:
+                white;
+
+        }
 
     </style>
 
 </head>
 
+
 <body>
 
-<div class="floating-blur blur-one"></div>
+    <!-- BACKGROUND -->
 
-<div class="floating-blur blur-two"></div>
+    <div class="background-orb orb-one"></div>
 
-<div class="container page-wrapper">
+    <div class="background-orb orb-two"></div>
 
-    <!-- HERO -->
+    <div class="background-orb orb-three"></div>
 
-    <div class="hero-section">
 
-        <div class="hero-badge">
+    <div class="page-wrapper">
 
-            <i class="fa-solid fa-wallet"></i>
 
-            Expense Records Dashboard
+        <!-- =====================================================
+             HERO
+        ====================================================== -->
 
-        </div>
+        <section class="hero-section">
 
-        <h1 class="hero-title">
+            <div class="hero-badge">
 
-            All Expenses
+                <i class="fa-solid fa-wallet"></i>
 
-        </h1>
+                Expense Records Dashboard
 
-        <p class="hero-subtitle">
+            </div>
 
-            View and track all your expenses in one smart dashboard.
 
-        </p>
+            <h1 class="hero-title">
 
-    </div>
+                All Expenses
 
-    <!-- EXPENSE TABLE -->
+            </h1>
 
-    <div class="expenses-card">
 
-        {% if expenses %}
+            <p class="hero-subtitle">
 
-        <div class="table-responsive">
-
-            <table class="table align-middle">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Category
-                        </th>
-
-                        <th>
-                            Description
-                        </th>
-
-                        <th>
-                            Amount
-                        </th>
-
-                        <th>
-                            Date
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {% for expense in expenses %}
-
-                    <tr>
-
-                        <td>
-
-                            <div class="category-badge">
-
-                                <i class="fa-solid fa-tag"></i>
-
-                                {{ expense.category }}
-
-                            </div>
-
-                        </td>
-
-                        <td>
-
-                            <div class="description-box">
-
-                                {% if expense.description %}
-
-                                    {{ expense.description }}
-
-                                {% else %}
-
-                                    <span class="text-secondary">
-
-                                        No Description
-
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-                        </td>
-
-                        <td>
-
-                            <div class="amount-box">
-
-                                ₹{{ expense.amount }}
-
-                            </div>
-
-                        </td>
-
-                        <td>
-
-                            <div class="date-box">
-
-                                <i class="fa-regular fa-calendar me-1"></i>
-
-                                {{ expense.date }}
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-        {% else %}
-
-        <div class="empty-state">
-
-            <i class="fa-solid fa-wallet"></i>
-
-            <h3 class="mb-3">
-
-                No Expenses Found
-
-            </h3>
-
-            <p>
-
-                Your expenses will appear here once you add them.
+                View and track all your expenses in one smart dashboard.
 
             </p>
 
+        </section>
+
+
+        <!-- =====================================================
+             EXPENSE TABLE
+        ====================================================== -->
+
+        <div class="expenses-card">
+
+            {% if expenses %}
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Description
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                            <th>
+                                Date
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for expense in expenses %}
+
+                        <tr>
+
+                            <!-- CATEGORY -->
+
+                            <td>
+
+                                <div class="category-badge">
+
+                                    <i class="fa-solid fa-tag"></i>
+
+                                    {{ expense.category }}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- DESCRIPTION -->
+
+                            <td>
+
+                                <div class="description-box">
+
+                                    {% if expense.description %}
+
+                                        {{ expense.description }}
+
+                                    {% else %}
+
+                                        <span class="text-secondary">
+
+                                            No Description
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- AMOUNT -->
+
+                            <td>
+
+                                <div class="amount-box">
+
+                                    ₹{{ expense.amount }}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- DATE -->
+
+                            <td>
+
+                                <div class="date-box">
+
+                                    <i
+                                        class="fa-regular fa-calendar me-1"
+                                    ></i>
+
+                                    {{ expense.date }}
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            {% else %}
+
+
+            <!-- =================================================
+                 EMPTY STATE
+            ================================================== -->
+
+            <div class="empty-state">
+
+                <div class="empty-state-icon">
+
+                    <i class="fa-solid fa-wallet"></i>
+
+                </div>
+
+
+                <h3 class="mb-3">
+
+                    No Expenses Found
+
+                </h3>
+
+
+                <p>
+
+                    Your expenses will appear here once you add them.
+
+                </p>
+
+            </div>
+
+
+            {% endif %}
+
         </div>
 
-        {% endif %}
+
+        <!-- =====================================================
+             BACK BUTTON
+        ====================================================== -->
+
+        <div class="back-wrapper">
+
+            <a
+                href="/view_analyze"
+                class="back-btn"
+            >
+
+                <i class="fa-solid fa-arrow-left me-2"></i>
+
+                Back
+
+            </a>
+
+        </div>
+
 
     </div>
 
-    <!-- BACK BUTTON -->
-
-    <div class="text-center">
-
-        <a
-            href="/view_analyze"
-            class="btn btn-danger px-5 back-btn"
-        >
-
-            <i class="fa-solid fa-arrow-left me-2"></i>
-
-            Back
-
-        </a>
-
-    </div>
-
-</div>
 
 </body>
 
