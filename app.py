@@ -14,6 +14,9 @@ from flask import *
 from PIL import Image 
 from dotenv import load_dotenv
 load_dotenv()
+
+import cloudinary
+import cloudinary.uploader
 # from flask_wtf import CSRFProtect
 import csv
 import pandas as pd
@@ -31,6 +34,7 @@ import time
 import shutil
 import zipfile
 import os
+import re
 import matplotlib
 matplotlib.use('Agg')
 
@@ -53,6 +57,18 @@ BREVO_API_KEY = os.getenv("BREVO_API_KEY", "").strip()
 # app.secret_key = "expense_secret_key"
 app.secret_key = os.environ.get("SECRET_KEY")
 MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER")
+
+# =========================
+# CLOUDINARY CONFIGURATION
+# =========================
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
+
 # Database setup
 database_url = os.getenv("DATABASE_URL")
 
@@ -143,6 +159,96 @@ def ist_now():
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# =========================
+# CLOUDINARY HELPERS
+# =========================
+# These helpers let old-style local filenames (from before the Cloudinary
+# migration) keep working in templates/PDFs while every new upload uses
+# full Cloudinary secure_url values. This is what fixes the
+# "Internal Server Error" on Vercel: Vercel's filesystem is read-only
+# except for /tmp, so anything saved with file.save(local_path) or
+# os.remove(local_path) crashes there. Cloudinary removes the need to
+# write image files to disk at all.
+
+import tempfile
+
+def cloudinary_public_id_from_url(url):
+    """Given a Cloudinary secure_url, recover the public_id needed for destroy()."""
+    try:
+        after_upload = url.split("/upload/", 1)[1]
+        # strip a leading version segment like v1699999999/
+        after_upload = re.sub(r"^v[0-9]+/", "", after_upload)
+        public_id, _ext = os.path.splitext(after_upload)
+        return public_id
+    except Exception:
+        return None
+
+def delete_cloudinary_image(url):
+    """Best-effort delete of a Cloudinary image given its secure_url. Never raises."""
+    if not url or not isinstance(url, str) or not url.startswith("http"):
+        return
+    public_id = cloudinary_public_id_from_url(url)
+    if not public_id:
+        return
+    try:
+        cloudinary.uploader.destroy(public_id, resource_type="image")
+    except Exception as e:
+        print("Cloudinary delete error:", e)
+
+def upload_image_to_cloudinary(file_storage, folder):
+    """Uploads a Flask file storage object to Cloudinary and returns the secure_url."""
+    filename = str(uuid.uuid4()) + "_" + secure_filename(file_storage.filename)
+    upload_result = cloudinary.uploader.upload(
+        file_storage,
+        public_id=filename.rsplit(".", 1)[0],
+        folder=folder,
+        resource_type="image"
+    )
+    return upload_result["secure_url"]
+
+def download_image_to_tempfile(url):
+    """Downloads a Cloudinary (or any http) image to a local temp file for
+    embedding into a PDF or a backup zip. Returns the local path, or None."""
+    try:
+        resp = requests.get(url, timeout=15)
+        resp.raise_for_status()
+        ext = os.path.splitext(url.split("?")[0])[1] or ".jpg"
+        fd, tmp_path = tempfile.mkstemp(suffix=ext)
+        with os.fdopen(fd, "wb") as f:
+            f.write(resp.content)
+        return tmp_path
+    except Exception as e:
+        print("Image download error:", e)
+        return None
+
+def get_image_size_bytes(img, local_folder=None):
+    """Returns the byte size of an image, whether it's a Cloudinary URL
+    (HEAD request) or a legacy local file path. Returns 0 on any failure."""
+    try:
+        if isinstance(img, str) and img.startswith("http"):
+            resp = requests.head(img, timeout=5)
+            return int(resp.headers.get("Content-Length", 0))
+        else:
+            local_path = os.path.join(local_folder or app.config["UPLOAD_FOLDER"], img)
+            if os.path.exists(local_path):
+                return os.path.getsize(local_path)
+    except Exception:
+        pass
+    return 0
+
+@app.template_filter("img_url")
+def img_url_filter(value, folder="uploads", default="default.png"):
+    """Use in templates instead of url_for('static', filename=...):
+    {{ img_value | img_url }}                     -> defaults to uploads/ folder
+    {{ user.profile_pic | img_url('profile_pics') }}
+    New values are full Cloudinary URLs and are returned as-is; old local
+    filenames (from before the migration) still resolve to /static/<folder>/."""
+    if not value:
+        value = default
+    if isinstance(value, str) and (value.startswith("http://") or value.startswith("https://")):
+        return value
+    return url_for("static", filename=f"{folder}/{value}")
 
 def login_required(f):
     @wraps(f)
@@ -1066,32 +1172,16 @@ def upload_profile_pic():
 
     if file and file.filename != "":
 
-        filename = secure_filename(
-            file.filename
+        old_pic = user.profile_pic
+
+        profile_url = upload_image_to_cloudinary(
+            file, folder="spendwise/profile_pics"
         )
 
-        file_path = os.path.join(
-            "static/profile_pics",
-            filename
-        )
+        user.profile_pic = profile_url
 
-        file.save(file_path)
-
-        if (
-            user.profile_pic
-            and user.profile_pic != "default.png"
-        ):
-
-            old_path = os.path.join(
-                "static/profile_pics",
-                user.profile_pic
-            )
-
-            if os.path.exists(old_path):
-
-                os.remove(old_path)
-
-        user.profile_pic = filename
+        # clean up the previous Cloudinary picture, if any
+        delete_cloudinary_image(old_pic)
 
         db.session.commit()
 
@@ -1101,7 +1191,7 @@ def upload_profile_pic():
         )
 
     return redirect("/dashboard")
-
+        
 @app.route("/delete_profile_pic")
 @login_required
 def delete_profile_pic():
@@ -1109,6 +1199,8 @@ def delete_profile_pic():
     user = User.query.get(
         session["user_id"]
     )
+
+    delete_cloudinary_image(user.profile_pic)
 
     user.profile_pic = "default.png"
 
@@ -1443,20 +1535,11 @@ def add_expense():
 
             if file and allowed_file(file.filename):
 
-                filename = (
-                    str(uuid.uuid4())
-                    + "_"
-                    + secure_filename(file.filename)
+                image_url = upload_image_to_cloudinary(
+                    file, folder="spendwise/expenses"
                 )
 
-                file.save(
-                    os.path.join(
-                        app.config["UPLOAD_FOLDER"],
-                        filename
-                    )
-                )
-
-                image_list.append(filename)
+                image_list.append(image_url)
 
         expense = Expense(
 
@@ -1553,25 +1636,26 @@ def edit_expense(id):
             if img in existing_images:
                 existing_images.remove(img)
 
-                img_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], img
-                )
-
-                if os.path.exists(img_path):
-                    os.remove(img_path)
+                if img.startswith("http"):
+                    # Cloudinary-hosted image
+                    delete_cloudinary_image(img)
+                else:
+                    # legacy local file (pre-Cloudinary)
+                    img_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"], img
+                    )
+                    if os.path.exists(img_path):
+                        os.remove(img_path)
 
         # ADD NEW IMAGES
         new_files = request.files.getlist("new_images")
 
         for file in new_files:
             if file and allowed_file(file.filename):
-                filename = str(uuid.uuid4()) + "_" + secure_filename(file.filename)
-
-                file.save(
-                    os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                image_url = upload_image_to_cloudinary(
+                    file, folder="spendwise/expenses"
                 )
-
-                existing_images.append(filename)
+                existing_images.append(image_url)
 
         # ✅ IMPORTANT FIX
         expense.images = json.dumps(existing_images)
@@ -1621,10 +1705,12 @@ def delete_expense(id):
             image_list = json.loads(expense.images)
 
             for img in image_list:
-                img_path = os.path.join(app.config["UPLOAD_FOLDER"], img)
-
-                if os.path.exists(img_path):
-                    os.remove(img_path)
+                if img.startswith("http"):
+                    delete_cloudinary_image(img)
+                else:
+                    img_path = os.path.join(app.config["UPLOAD_FOLDER"], img)
+                    if os.path.exists(img_path):
+                        os.remove(img_path)
 
         except Exception as e:
             print("Image delete error:", e)
@@ -3313,8 +3399,9 @@ def advanced_export_pdf():
     # EXPORT FOLDER
     # =========================================
 
-    export_folder = os.path.join("static", "exports")
-    os.makedirs(export_folder, exist_ok=True)
+    # Use the OS temp directory (writable on Render AND on Vercel's
+    # read-only serverless filesystem, unlike a "static/exports" folder)
+    export_folder = tempfile.mkdtemp(prefix="spendwise_export_")
 
     # =========================================
     # IMAGE COMPRESS FUNCTION
@@ -3464,10 +3551,17 @@ def advanced_export_pdf():
 
                 for image_name in image_list:
 
-                    image_name = secure_filename(image_name)
-                    image_path = os.path.join("static", "uploads", image_name)
+                    # New images are full Cloudinary URLs; old ones (from
+                    # before the migration) may still be local filenames.
+                    if isinstance(image_name, str) and image_name.startswith("http"):
+                        image_path = download_image_to_tempfile(image_name)
+                    else:
+                        local_path = os.path.join(
+                            "static", "uploads", secure_filename(image_name)
+                        )
+                        image_path = local_path if os.path.exists(local_path) else None
 
-                    if os.path.exists(image_path):
+                    if image_path and os.path.exists(image_path):
                         try:
                             name, ext = os.path.splitext(image_path)
                             compressed_path = f"{name}_compressed.jpg"
@@ -3542,18 +3636,11 @@ def settings_storage():
 
         for img in image_list:
 
-            image_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                img
-            )
+            size = get_image_size_bytes(img)
 
-            if os.path.exists(image_path):
-
+            if size:
                 total_images += 1
-
-                total_size += os.path.getsize(
-                    image_path
-                )
+                total_size += size
 
     storage_mb = round(
         total_size / (1024 * 1024),
@@ -3952,16 +4039,16 @@ def upload_admin_profile():
 
     if file and file.filename != "":
 
-        filename = secure_filename(file.filename)
+        old_pic = session.get("admin_profile_pic")
 
-        save_path = os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            filename
+        profile_url = upload_image_to_cloudinary(
+            file, folder="spendwise/admin_profiles"
         )
 
-        file.save(save_path)
+        session["admin_profile_pic"] = profile_url
 
-        session["admin_profile_pic"] = filename
+        if old_pic:
+            delete_cloudinary_image(old_pic)
 
     return redirect("/admin_dashboard")
 
@@ -3973,6 +4060,8 @@ def upload_admin_profile():
 @app.route("/remove_admin_profile")
 @admin_required
 def remove_admin_profile():
+
+    delete_cloudinary_image(session.get("admin_profile_pic"))
 
     session.pop("admin_profile_pic", None)
 
@@ -4255,17 +4344,10 @@ def storage_management():
 
                     for image in image_list:
 
-                        path = os.path.join(
-                            "static/uploads",
-                            image
-                        )
+                        size = get_image_size_bytes(image)
 
-                        if os.path.exists(path):
-
-                            total_user_size += (
-                                os.path.getsize(path)
-                            )
-
+                        if size:
+                            total_user_size += size
                             image_count += 1
 
                 except:
@@ -4692,6 +4774,39 @@ def full_app_backup():
 
                         zipf.write(file_path)
 
+        # Cloudinary-hosted images (expenses + profile pictures) are
+        # downloaded into the zip since they no longer live on disk.
+        all_expenses_for_backup = Expense.query.all()
+
+        for expense in all_expenses_for_backup:
+            if expense.images:
+                try:
+                    image_list = json.loads(expense.images)
+                except Exception:
+                    image_list = []
+
+                for img in image_list:
+                    if isinstance(img, str) and img.startswith("http"):
+                        tmp_img = download_image_to_tempfile(img)
+                        if tmp_img:
+                            arcname = os.path.join(
+                                "cloudinary_uploads",
+                                os.path.basename(img.split("?")[0])
+                            )
+                            zipf.write(tmp_img, arcname)
+                            os.remove(tmp_img)
+
+        for backup_user_obj in User.query.all():
+            if backup_user_obj.profile_pic and backup_user_obj.profile_pic.startswith("http"):
+                tmp_img = download_image_to_tempfile(backup_user_obj.profile_pic)
+                if tmp_img:
+                    arcname = os.path.join(
+                        "cloudinary_profile_pics",
+                        os.path.basename(backup_user_obj.profile_pic.split("?")[0])
+                    )
+                    zipf.write(tmp_img, arcname)
+                    os.remove(tmp_img)
+
         if os.path.exists(
             "instance/expense_tracker.db"
         ):
@@ -4760,14 +4875,24 @@ def backup_user(user_id):
 
                     for image in image_list:
 
-                        img_path = os.path.join(
-                            "static/uploads",
-                            image
-                        )
+                        if isinstance(image, str) and image.startswith("http"):
+                            tmp_img = download_image_to_tempfile(image)
+                            if tmp_img:
+                                arcname = os.path.join(
+                                    "cloudinary_uploads",
+                                    os.path.basename(image.split("?")[0])
+                                )
+                                zipf.write(tmp_img, arcname)
+                                os.remove(tmp_img)
+                        else:
+                            img_path = os.path.join(
+                                "static/uploads",
+                                image
+                            )
 
-                        if os.path.exists(img_path):
+                            if os.path.exists(img_path):
 
-                            zipf.write(img_path)
+                                zipf.write(img_path)
 
                 except:
 
@@ -4812,11 +4937,31 @@ def reset_entire_app():
 
     # DELETE ALL USERS
 
+    # collect Cloudinary URLs before the rows are gone, so we can also
+    # purge them from Cloudinary (local folders are cleared below as before)
+    cloudinary_urls_to_delete = []
+
+    for expense in Expense.query.all():
+        if expense.images:
+            try:
+                for img in json.loads(expense.images):
+                    if isinstance(img, str) and img.startswith("http"):
+                        cloudinary_urls_to_delete.append(img)
+            except Exception:
+                pass
+
+    for reset_user in User.query.all():
+        if reset_user.profile_pic and reset_user.profile_pic.startswith("http"):
+            cloudinary_urls_to_delete.append(reset_user.profile_pic)
+
     Expense.query.delete()
 
     User.query.delete()
 
     db.session.commit()
+
+    for url in cloudinary_urls_to_delete:
+        delete_cloudinary_image(url)
 
     # CLEAR UPLOADS
 

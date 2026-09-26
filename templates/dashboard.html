@@ -866,10 +866,7 @@
 >
 
     <img
-        src="{{ url_for(
-            'static',
-            filename='profile_pics/' + user.profile_pic
-        ) }}"
+        src="{{ user.profile_pic | img_url('profile_pics') }}"
         class="profile-image"
         alt="Profile Picture"
     >
@@ -1152,10 +1149,7 @@
                 <div class="zoom-wrapper">
 
                     <img
-    src="{{ url_for(
-        'static',
-        filename='profile_pics/' + user.profile_pic
-    ) }}"
+    src="{{ user.profile_pic | img_url('profile_pics') }}"
     class="img-fluid mb-4 zoomable-image"
     id="zoomImage"
     style="

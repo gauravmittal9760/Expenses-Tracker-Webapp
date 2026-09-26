@@ -412,7 +412,7 @@
                                     <div class="mb-3">
 
                                         <img
-                                            src="{{ url_for('static', filename='uploads/' + img) }}"
+                                            src="{{ img | img_url }}"
                                             width="220"
                                             class="rounded mb-2 expense-images"
                                         >

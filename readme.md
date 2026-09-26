@@ -29,7 +29,7 @@ The application also provides data-driven Machine Learning features for spending
 - Expense Categories
 - Expense Description
 - Expense Date Tracking
-- Expense Image Upload
+- Expense Image Upload (cloud-hosted via Cloudinary)
 - Expense Memory Gallery
 - Search Expenses
 - Search by Category
@@ -76,12 +76,12 @@ The application also provides data-driven Machine Learning features for spending
 - User Login Records
 - Account Activity Monitoring
 - Application Management
-- Application Backup Features
-- Application Reset Features
+- Application Backup Features (includes cloud-hosted images, downloaded into the backup ZIP)
+- Application Reset Features (also purges cloud-hosted images on full reset)
 
 ### Account & Additional Features
 
-- Profile Picture Upload
+- Profile Picture Upload (cloud-hosted via Cloudinary)
 - Account Details Management
 - Notification Settings
 - Currency Management
@@ -91,7 +91,7 @@ The application also provides data-driven Machine Learning features for spending
 - Login Activity Center
 - CSV Export
 - Excel Export
-- PDF Reports
+- PDF Reports (with cloud-hosted receipt images embedded)
 - Print Statements
 - Responsive User Interface
 - Dark Futuristic Design
@@ -180,17 +180,19 @@ to generate personalized, data-driven financial insights and savings-oriented re
 - Neon PostgreSQL for persistent cloud database hosting
 - SQLite for supported local development scenarios
 
-### File & Document Processing
+### Media & File Storage
 
-- Pillow
-- OpenPyXL
-- FPDF
+- **Cloudinary** — cloud-hosted storage for all user-uploaded images (expense receipts and profile pictures)
+- Pillow — image compression before embedding into PDFs
+- OpenPyXL — Excel export
+- FPDF — PDF report generation
 
 ### Deployment
 
 - Render
 - Vercel
 - Neon PostgreSQL
+- Cloudinary
 
 ---
 
@@ -203,6 +205,46 @@ The current cloud deployment uses **Neon PostgreSQL**, allowing the application'
 The application connects to the database through the `DATABASE_URL` environment variable.
 
 Sensitive configuration values such as database credentials, secret keys, email credentials, and administrator credentials are stored through environment variables rather than being committed to the GitHub repository.
+
+---
+
+## Image & Media Storage (Cloudinary)
+
+All user-uploaded images — expense receipts and profile pictures (including the admin profile picture) — are stored on **Cloudinary** instead of the application's local filesystem.
+
+This is required for hosting on **Vercel**, whose serverless functions run on a **read-only filesystem** (only the OS temp directory is writable, and it does not persist between requests). Saving uploads with a local `file.save()` call works on a traditional host like Render but fails with an Internal Server Error on Vercel. Cloudinary removes this limitation entirely, so uploads, edits, and deletions all work identically on both Render and Vercel.
+
+- New uploads (expense images, user profile pictures, admin profile picture) are uploaded directly to Cloudinary and only the returned `secure_url` is stored in the database.
+- Deleting an expense, removing an image from an expense, or replacing a profile picture also removes the corresponding image from Cloudinary.
+- PDF export downloads each receipt image from its Cloudinary URL on demand (into a temporary file) before embedding it in the generated report.
+- Admin backup (`Full App Backup` / per-user backup) downloads all Cloudinary-hosted images into the backup ZIP so the archive remains a complete, self-contained copy.
+- Legacy local image filenames (from before this migration) are still supported as a fallback wherever images are read, so existing records are not broken.
+
+### Required Cloudinary Environment Variables
+
+| Variable | Description |
+|---|---|
+| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary account's cloud name |
+| `CLOUDINARY_API_KEY` | Your Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Your Cloudinary API secret |
+
+These must be set on **both** Render and Vercel (alongside `DATABASE_URL`, `SECRET_KEY`, etc.) — the application will not be able to store images without them.
+
+---
+
+## Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Neon PostgreSQL connection string |
+| `SECRET_KEY` | Flask session secret key |
+| `BREVO_API_KEY` | Brevo (Sendinblue) API key for transactional emails / OTPs |
+| `MAIL_DEFAULT_SENDER` | Default sender email address |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+
+None of these should ever be committed to the GitHub repository — configure them through Render's and Vercel's environment variable settings.
 
 ---
 
@@ -241,7 +283,7 @@ Expenses-Tracker-Webapp/
 │   └── ...
 │
 ├── static/
-│   ├── uploads/
+│   ├── uploads/        (legacy local uploads, kept only as a fallback)
 │   └── ...
 │
 └── Screenshots/
@@ -249,6 +291,7 @@ Expenses-Tracker-Webapp/
     ├── signup.png
     ├── dashboard.png
     └── admin.png
+```
 
 ---
 
@@ -256,32 +299,45 @@ Expenses-Tracker-Webapp/
 
 ### 1. Clone the Repository
 
+```
 git clone https://github.com/gauravmittal9760/expense-tracker-webapp.git
-
+```
 
 ### 2. Go Into the Project Folder
 
-
+```
 cd expense-tracker-webapp
+```
 
 ### 3. Create a Virtual Environment
 
+```
 python -m venv venv
+```
 
 ### 4. Activate the Virtual Environment
 
 #### Windows
 
-
+```
 venv\Scripts\activate
+```
 
 ### 5. Install Dependencies
 
+```
 pip install -r requirements.txt
+```
 
-### 6. Run the Application
+### 6. Configure Environment Variables
 
+Create a `.env` file (or configure your host's environment variable settings) with the values listed in [Environment Variables](#environment-variables), including the Cloudinary credentials.
+
+### 7. Run the Application
+
+```
 python app.py
+```
 
 The application will then be available through the local Flask server.
 
@@ -319,7 +375,9 @@ The anomaly detection system can analyse recorded transactions and identify pote
 
 ## Deployment
 
-SpendWise can be deployed using **Render** with Gunicorn.
+SpendWise is deployed using both **Render** (with Gunicorn) and **Vercel**.
+
+Image uploads (expense receipts, profile pictures, admin profile picture) are stored on **Cloudinary**, which makes the application's image handling fully compatible with Vercel's read-only serverless filesystem as well as Render's persistent one. Make sure the Cloudinary environment variables are configured on whichever platform(s) you deploy to.
 
 The application supports production deployment using the dependencies specified in `requirements.txt`.
 

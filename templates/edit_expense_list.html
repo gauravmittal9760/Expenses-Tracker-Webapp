@@ -1266,10 +1266,7 @@
 
                             <img
 
-                                src="{{ url_for(
-                                    'static',
-                                    filename='uploads/' + image_list[0]
-                                ) }}"
+                                src="{{ image_list[0] | img_url }}"
 
                                 class="expense-preview"
 
@@ -1286,10 +1283,7 @@
 
                         <img
 
-                            src="{{ url_for(
-                                'static',
-                                filename='uploads/' + expense.images
-                            ) }}"
+                            src="{{ expense.images | img_url }}"
 
                             class="expense-preview"
 

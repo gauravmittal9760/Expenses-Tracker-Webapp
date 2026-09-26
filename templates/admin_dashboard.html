@@ -1091,7 +1091,7 @@ SIDEBAR
                 {% if admin_profile_pic %}
 
                     <img
-                        src="{{ url_for('static', filename='uploads/' + admin_profile_pic) }}"
+                        src="{{ admin_profile_pic | img_url }}"
                         class="profile-pic"
                         onclick="toggleOptions(); openZoom();"
                     >
@@ -1666,7 +1666,7 @@ ZOOM MODAL
     {% if admin_profile_pic %}
 
     <img
-        src="{{ url_for('static', filename='uploads/' + admin_profile_pic) }}"
+        src="{{ admin_profile_pic | img_url }}"
         class="zoom-img"
     >
 

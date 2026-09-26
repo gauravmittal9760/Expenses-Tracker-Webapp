@@ -440,10 +440,7 @@
 
     <img
 
-        src="{{ url_for(
-            'static',
-            filename='uploads/' + img
-        ) }}"
+        src="{{ img | img_url }}"
 
         class="gallery-image"
 
