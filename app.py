@@ -4291,36 +4291,11 @@ def format_size(size):
 @admin_required
 def storage_management():
 
-    upload_size = get_folder_size(
-        "static/uploads"
-    )
-
-    export_size = get_folder_size(
-        "static/exports"
-    )
-
-    profile_size = get_folder_size(
-        "static/profile_pics"
-    )
-
-    db_size = 0
-
-    if os.path.exists("instance/expense_tracker.db"):
-
-        db_size = os.path.getsize(
-            "instance/expense_tracker.db"
-        )
-
-    total_storage = (
-        upload_size +
-        export_size +
-        profile_size +
-        db_size
-    )
-
     users = User.query.all()
 
     user_storage_data = []
+
+    total_uploaded_images_size = 0
 
     for user in users:
 
@@ -4354,6 +4329,8 @@ def storage_management():
 
                     pass
 
+        total_uploaded_images_size += total_user_size
+
         user_storage_data.append({
 
             "username": user.username,
@@ -4366,6 +4343,44 @@ def storage_management():
             "image_count": image_count
 
         })
+
+    # Cloud-hosted profile pictures (Cloudinary) + any leftover legacy
+    # local ones, so this box reflects reality instead of always 0.
+    profile_size = get_folder_size("static/profile_pics")
+
+    for user in users:
+        if user.profile_pic and user.profile_pic != "default.png":
+            profile_size += get_image_size_bytes(user.profile_pic)
+
+    admin_pic = session.get("admin_profile_pic")
+    if admin_pic:
+        profile_size += get_image_size_bytes(admin_pic)
+
+    # Cloud-hosted expense images (Cloudinary) + any leftover legacy
+    # local uploads still sitting on disk from before the migration.
+    upload_size = total_uploaded_images_size + get_folder_size("static/uploads")
+
+    # PDF/CSV/chart exports are now generated in a temp directory and
+    # streamed straight to the browser rather than kept on disk, so this
+    # stays 0 unless legacy files remain in static/exports.
+    export_size = get_folder_size(
+        "static/exports"
+    )
+
+    db_size = 0
+
+    if os.path.exists("instance/expense_tracker.db"):
+
+        db_size = os.path.getsize(
+            "instance/expense_tracker.db"
+        )
+
+    total_storage = (
+        upload_size +
+        export_size +
+        profile_size +
+        db_size
+    )
 
     largest_user = max(
         user_storage_data,
