@@ -3,6 +3,7 @@
 
 <head>
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin_fx/admin-cursor.css') }}">
     <title>
         Admin Dashboard
     </title>
@@ -1062,11 +1063,163 @@ RESPONSIVE
     }
 }
 
+/* =========================
+SUPREME UI — PARTICLE CANVAS
+========================= */
+
+#admin-particles{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:-6;
+
+    opacity:0.55;
+}
+
+/* =========================
+SUPREME UI — ENTRANCE ANIMATIONS
+========================= */
+
+@keyframes fadeUp{
+
+    from{
+        opacity:0;
+        transform:translateY(26px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.title,
+.subtitle,
+.live-status{
+    animation:fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.subtitle{ animation-delay:0.08s; }
+.live-status{ animation-delay:0.16s; }
+
+.stat-card{
+    animation:fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+    transform-style:preserve-3d;
+    will-change:transform;
+}
+
+.stat-card:nth-of-type(1){ animation-delay:0.10s; }
+.stat-card:nth-of-type(2){ animation-delay:0.22s; }
+.stat-card:nth-of-type(3){ animation-delay:0.34s; }
+
+.bottom-grid .glass{
+    animation:fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.bottom-grid .glass:nth-of-type(1){ animation-delay:0.42s; }
+.bottom-grid .glass:nth-of-type(2){ animation-delay:0.52s; }
+
+.menu-btn{
+    animation:fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.menu-btn:nth-of-type(1){ animation-delay:0.05s; }
+.menu-btn:nth-of-type(2){ animation-delay:0.10s; }
+.menu-btn:nth-of-type(3){ animation-delay:0.15s; }
+.menu-btn:nth-of-type(4){ animation-delay:0.20s; }
+.menu-btn:nth-of-type(5){ animation-delay:0.25s; }
+.menu-btn:nth-of-type(6){ animation-delay:0.30s; }
+.menu-btn:nth-of-type(7){ animation-delay:0.35s; }
+.menu-btn:nth-of-type(8){ animation-delay:0.40s; }
+
+/* =========================
+SUPREME UI — ACTIVE MENU HIGHLIGHT
+========================= */
+
+.menu-btn.active-route{
+
+    background:
+    linear-gradient(
+        90deg,
+        rgba(0,229,255,0.28),
+        rgba(0,255,149,0.20)
+    );
+
+    border-color:rgba(0,255,255,0.4);
+
+    box-shadow:0 0 22px rgba(0,255,255,0.2);
+}
+
+.menu-btn.active-route i{
+    color:#00ff95;
+}
+
+/* =========================
+SUPREME UI — LIVE STATUS GLOW PULSE
+========================= */
+
+.live-status{
+    position:relative;
+}
+
+.live-status::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:-2px;
+
+    border-radius:20px;
+
+    padding:2px;
+
+    background:
+    linear-gradient(
+        120deg,
+        rgba(0,255,149,0.6),
+        rgba(0,229,255,0.1),
+        rgba(0,255,149,0.6)
+    );
+
+    background-size:220% 220%;
+
+    animation:liveBorder 3.5s linear infinite;
+
+    -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+
+    pointer-events:none;
+
+    z-index:-1;
+}
+
+@keyframes liveBorder{
+    0%{ background-position:0% 50%; }
+    100%{ background-position:220% 50%; }
+}
+
+/* =========================
+SUPREME UI — ANIMATED STAT COUNTER
+========================= */
+
+.stat-number{
+    display:inline-block;
+}
+
 </style>
 
 </head>
 
 <body>
+
+<canvas id="admin-particles"></canvas>
 
 <div class="bg-grid"></div>
 
@@ -1313,9 +1466,9 @@ MAIN
 
             </div>
 
-            <h2>
+            <h2 class="stat-number" data-target="{{ total_users }}">
 
-                {{ total_users }}
+                0
 
             </h2>
 
@@ -1335,9 +1488,9 @@ MAIN
 
             </div>
 
-            <h2>
+            <h2 class="stat-number" data-target="{{ total_expenses }}">
 
-                {{ total_expenses }}
+                0
 
             </h2>
 
@@ -1357,9 +1510,9 @@ MAIN
 
             </div>
 
-            <h2>
+            <h2 class="stat-number" data-target="{{ total_images }}">
 
-                {{ total_images }}
+                0
 
             </h2>
 
@@ -1709,6 +1862,151 @@ function closeZoom(){
 }
 
 </script>
+
+<script>
+/* =========================================================
+   SUPREME UI — particle network, animated counters,
+   3D tilt cards, active menu highlight
+   ========================================================= */
+
+// ---------- Animated counters ----------
+document.querySelectorAll(".stat-number").forEach(function (el) {
+    var target = parseInt(el.getAttribute("data-target"), 10) || 0;
+    var duration = 1200;
+    var startTime = null;
+
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        el.textContent = Math.floor(eased * target);
+
+        if (progress < 1) {
+            requestAnimationFrame(step);
+        } else {
+            el.textContent = target;
+        }
+    }
+
+    requestAnimationFrame(step);
+});
+
+// ---------- 3D tilt on stat cards & glass panels ----------
+document.querySelectorAll(".stat-card, .glass").forEach(function (card) {
+    card.style.transition = "transform 0.25s ease, box-shadow 0.25s ease";
+
+    card.addEventListener("mousemove", function (e) {
+        var rect = card.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var y = e.clientY - rect.top;
+
+        var centerX = rect.width / 2;
+        var centerY = rect.height / 2;
+
+        var rotateX = ((y - centerY) / centerY) * -6;
+        var rotateY = ((x - centerX) / centerX) * 6;
+
+        card.style.transform =
+            "perspective(700px) rotateX(" + rotateX + "deg) rotateY(" +
+            rotateY + "deg) translateY(-6px) scale(1.015)";
+    });
+
+    card.addEventListener("mouseleave", function () {
+        card.style.transform = "";
+    });
+});
+
+// ---------- Active sidebar menu highlight ----------
+(function () {
+    var currentPath = window.location.pathname;
+
+    document.querySelectorAll(".menu-btn").forEach(function (link) {
+        var href = link.getAttribute("href");
+        if (href && href === currentPath) {
+            link.classList.add("active-route");
+        }
+    });
+})();
+
+// ---------- Particle network background ----------
+(function () {
+    var canvas = document.getElementById("admin-particles");
+    if (!canvas) return;
+
+    var ctx = canvas.getContext("2d");
+    var particles = [];
+    var PARTICLE_COUNT = window.innerWidth < 900 ? 35 : 70;
+    var LINK_DISTANCE = 130;
+    var COLORS = ["#00e5ff", "#00ff95", "#7b2ff7"];
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function createParticles() {
+        particles = [];
+        for (var i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                r: Math.random() * 1.8 + 0.6,
+                color: COLORS[Math.floor(Math.random() * COLORS.length)]
+            });
+        }
+    }
+
+    function step() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+        }
+
+        for (var a = 0; a < particles.length; a++) {
+            for (var b = a + 1; b < particles.length; b++) {
+                var dx = particles[a].x - particles[b].x;
+                var dy = particles[a].y - particles[b].y;
+                var dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < LINK_DISTANCE) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[a].x, particles[a].y);
+                    ctx.lineTo(particles[b].x, particles[b].y);
+                    ctx.strokeStyle = "rgba(0,229,255," + (1 - dist / LINK_DISTANCE) * 0.18 + ")";
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        requestAnimationFrame(step);
+    }
+
+    window.addEventListener("resize", function () {
+        resize();
+        createParticles();
+    });
+
+    resize();
+    createParticles();
+    requestAnimationFrame(step);
+})();
+</script>
+    <script src="{{ url_for('static', filename='admin_fx/admin-cursor.js') }}"></script>
 
 </body>
 

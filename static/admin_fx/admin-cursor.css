@@ -1,0 +1,100 @@
+/* =========================================================
+   SpendWise Admin Panel — Custom Animated Cursor
+   Only ever linked from admin panel pages. Desktop/mouse only —
+   automatically disabled on touch devices inside admin-cursor.js.
+   ========================================================= */
+
+html.admin-cursor-active,
+html.admin-cursor-active body {
+    cursor: none;
+}
+
+html.admin-cursor-active a,
+html.admin-cursor-active button,
+html.admin-cursor-active input,
+html.admin-cursor-active select,
+html.admin-cursor-active textarea,
+html.admin-cursor-active label,
+html.admin-cursor-active [role="button"],
+html.admin-cursor-active .clickable {
+    cursor: none;
+}
+
+#admin-cursor-dot,
+#admin-cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 999999;
+    border-radius: 50%;
+    will-change: transform, opacity, width, height;
+    transform: translate(-50%, -50%);
+}
+
+#admin-cursor-dot {
+    width: 8px;
+    height: 8px;
+    background: #39ffb0;
+    box-shadow:
+        0 0 6px 1px rgba(57, 255, 176, 0.9),
+        0 0 14px 4px rgba(57, 255, 176, 0.45);
+    transition: width 0.18s ease, height 0.18s ease,
+        background-color 0.25s ease, opacity 0.2s ease;
+}
+
+#admin-cursor-ring {
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid rgba(57, 255, 176, 0.65);
+    background: radial-gradient(
+        circle,
+        rgba(57, 255, 176, 0.10) 0%,
+        rgba(57, 255, 176, 0.02) 60%,
+        transparent 75%
+    );
+    box-shadow: 0 0 18px 2px rgba(57, 255, 176, 0.18);
+    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s ease,
+        background 0.25s ease,
+        opacity 0.2s ease;
+}
+
+/* Hover state over interactive elements — ring grows + brightens */
+html.admin-cursor-hover #admin-cursor-ring {
+    width: 56px;
+    height: 56px;
+    border-color: rgba(57, 255, 176, 0.95);
+    background: radial-gradient(
+        circle,
+        rgba(57, 255, 176, 0.18) 0%,
+        rgba(57, 255, 176, 0.04) 60%,
+        transparent 75%
+    );
+}
+
+html.admin-cursor-hover #admin-cursor-dot {
+    width: 5px;
+    height: 5px;
+}
+
+/* Active/click state — quick punch-in */
+html.admin-cursor-down #admin-cursor-ring {
+    width: 26px;
+    height: 26px;
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+html.admin-cursor-down #admin-cursor-dot {
+    background: #ffffff;
+    box-shadow:
+        0 0 6px 1px rgba(255, 255, 255, 0.9),
+        0 0 16px 5px rgba(57, 255, 176, 0.55);
+}
+
+/* Fade out cleanly when the pointer leaves the window */
+html.admin-cursor-hidden #admin-cursor-dot,
+html.admin-cursor-hidden #admin-cursor-ring {
+    opacity: 0;
+}
