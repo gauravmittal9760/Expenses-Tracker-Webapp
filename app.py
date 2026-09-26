@@ -101,6 +101,11 @@ from sqlalchemy import event
 
 with app.app_context():
 
+    # Creates any tables that don't already exist yet (like AdminProfile).
+    # This never touches or drops existing tables/data — it only fills in
+    # gaps, so it's safe to run on every startup.
+    db.create_all()
+
     @event.listens_for(db.engine, "connect")
     def set_postgres_session_timezone(dbapi_connection, connection_record):
         if database_url:  # only Postgres understands SET TIME ZONE, not SQLite
@@ -423,6 +428,20 @@ class AdminProfile(db.Model):
     profile_pic = db.Column(
         db.String(300)
     )
+
+def get_admin_profile():
+    """There is only ever one admin, so this fetches (or creates) the
+    single AdminProfile row. Storing the picture here instead of in the
+    session means it survives server restarts, browser closes, and
+    logging in from Render vs Vercel — unlike a session-only value."""
+    profile = AdminProfile.query.first()
+
+    if not profile:
+        profile = AdminProfile(profile_pic=None)
+        db.session.add(profile)
+        db.session.commit()
+
+    return profile
 
 class NotificationSettings(db.Model):
 
@@ -4039,13 +4058,17 @@ def upload_admin_profile():
 
     if file and file.filename != "":
 
-        old_pic = session.get("admin_profile_pic")
+        admin_profile = get_admin_profile()
+
+        old_pic = admin_profile.profile_pic
 
         profile_url = upload_image_to_cloudinary(
             file, folder="spendwise/admin_profiles"
         )
 
-        session["admin_profile_pic"] = profile_url
+        admin_profile.profile_pic = profile_url
+
+        db.session.commit()
 
         if old_pic:
             delete_cloudinary_image(old_pic)
@@ -4061,9 +4084,13 @@ def upload_admin_profile():
 @admin_required
 def remove_admin_profile():
 
-    delete_cloudinary_image(session.get("admin_profile_pic"))
+    admin_profile = get_admin_profile()
 
-    session.pop("admin_profile_pic", None)
+    delete_cloudinary_image(admin_profile.profile_pic)
+
+    admin_profile.profile_pic = None
+
+    db.session.commit()
 
     return redirect("/admin_dashboard")
 
@@ -4098,9 +4125,7 @@ def admin_dashboard():
 
                 pass
 
-    admin_profile_pic = session.get(
-        "admin_profile_pic"
-    )
+    admin_profile_pic = get_admin_profile().profile_pic
 
     return render_template(
 
@@ -4352,7 +4377,7 @@ def storage_management():
         if user.profile_pic and user.profile_pic != "default.png":
             profile_size += get_image_size_bytes(user.profile_pic)
 
-    admin_pic = session.get("admin_profile_pic")
+    admin_pic = get_admin_profile().profile_pic
     if admin_pic:
         profile_size += get_image_size_bytes(admin_pic)
 
