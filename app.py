@@ -4605,7 +4605,23 @@ def change_admin_password():
     profile.panel_password_hash = generate_password_hash(new_password)
     db.session.commit()
 
-    return redirect("/admin_security")
+    return """
+    <h2 style='color:lime;text-align:center;margin-top:50px;'>
+    Admin Password Updated ✅
+    </h2>
+    <p style='text-align:center;max-width:520px;margin:20px auto;
+              padding:15px;border:1px solid #f0ad4e;border-radius:8px;
+              background:#fff8e6;color:#8a6d3b;'>
+    ⚠️ Also update the <code>ADMIN_PANEL_PASSWORD</code> environment
+    variable in your Render/Vercel dashboard to this same new password.
+    The database is what actually checks your login now — the
+    environment variable is only your own reference copy, and it will
+    show the old password until you update it there too.
+    </p>
+    <p style='text-align:center;'>
+    <a href="/admin_security">Back to Admin Security</a>
+    </p>
+    """
 
 
 # =========================
@@ -4748,9 +4764,20 @@ def set_new_admin_password():
 
     return """
     <h2 style='color:lime;text-align:center;margin-top:50px;'>
-    Admin Password Updated ✅<br><br>
-    You can log in with your new password now.
+    Admin Password Updated ✅
     </h2>
+    <p style='text-align:center;max-width:520px;margin:20px auto;
+              padding:15px;border:1px solid #f0ad4e;border-radius:8px;
+              background:#fff8e6;color:#8a6d3b;'>
+    ⚠️ Also update the <code>ADMIN_PANEL_PASSWORD</code> environment
+    variable in your Render/Vercel dashboard to this same new password.
+    The database is what actually checks your login now — the
+    environment variable is only your own reference copy, and it will
+    show the old password until you update it there too.
+    </p>
+    <p style='text-align:center;'>
+    <a href="/admin_security">Back to Admin Security</a>
+    </p>
     """
 
 @app.route("/admin_user_expenses")
