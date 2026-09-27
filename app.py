@@ -117,6 +117,28 @@ with app.app_context():
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 
+# =========================================================
+# NO-STALE-PAGE FIX
+# =========================================================
+# The DB already stores/returns everything in IST (see the connect
+# listener above). The "shows time from 5.5 hours ago until I refresh
+# or reopen the app" symptom is a BROWSER caching issue, not a backend
+# one: mobile browsers (and desktop back/forward navigation) keep a
+# snapshot of the page in memory (bfcache) and show that snapshot
+# instead of asking the server for anything new. Telling every
+# dynamic response to never be cached forces a fresh page — with a
+# fresh, correct time — on every open, exactly like a manual refresh
+# does today. Static files (css/js/uploaded assets) are left alone so
+# they still load fast.
+@app.after_request
+def add_no_cache_headers(response):
+    if not request.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 def send_otp_email(receiver_email, otp):
 
     configuration = sib_api_v3_sdk.Configuration()
@@ -429,6 +451,19 @@ class AdminProfile(db.Model):
         db.String(300)
     )
 
+    # DB-backed admin credentials. These replace rewriting the .env file
+    # at runtime: that approach crashed on Vercel's read-only filesystem,
+    # didn't persist on Render restarts, and didn't even affect the
+    # running process (which always re-read os.getenv(...) fresh). The
+    # password is stored hashed, same as regular user passwords.
+    panel_password_hash = db.Column(
+        db.String(300)
+    )
+
+    email = db.Column(
+        db.String(200)
+    )
+
 def get_admin_profile():
     """There is only ever one admin, so this fetches (or creates) the
     single AdminProfile row. Storing the picture here instead of in the
@@ -441,7 +476,34 @@ def get_admin_profile():
         db.session.add(profile)
         db.session.commit()
 
+    # One-time bootstrap: the very first time this runs, seed the DB
+    # credentials from the ADMIN_PANEL_PASSWORD / ADMIN_EMAIL env vars,
+    # so nothing breaks for an existing deploy. After this runs once,
+    # the env vars are no longer read for these two values.
+    seeded = False
+
+    if not profile.panel_password_hash and os.getenv("ADMIN_PANEL_PASSWORD"):
+        profile.panel_password_hash = generate_password_hash(
+            os.getenv("ADMIN_PANEL_PASSWORD")
+        )
+        seeded = True
+
+    if not profile.email and os.getenv("ADMIN_EMAIL"):
+        profile.email = os.getenv("ADMIN_EMAIL")
+        seeded = True
+
+    if seeded:
+        db.session.commit()
+
     return profile
+
+
+def check_admin_password(entered_password):
+    """Single source of truth for verifying the admin panel password."""
+    profile = get_admin_profile()
+    if not profile.panel_password_hash:
+        return False
+    return check_password_hash(profile.panel_password_hash, entered_password or "")
 
 class NotificationSettings(db.Model):
 
@@ -1189,7 +1251,7 @@ def upload_profile_pic():
         "profile_pic"
     )
 
-    if file and file.filename != "":
+    if file and file.filename != "" and allowed_file(file.filename):
 
         old_pic = user.profile_pic
 
@@ -1207,6 +1269,13 @@ def upload_profile_pic():
         flash(
             "Profile picture updated ✅",
             "success"
+        )
+
+    elif file and file.filename != "":
+
+        flash(
+            "Only PNG/JPG/JPEG images are allowed ❌",
+            "error"
         )
 
     return redirect("/dashboard")
@@ -3897,15 +3966,27 @@ def backup_account():
 
         })
 
-    file_name = f"backup_user_{user.id}.json"
+    fd, file_name = tempfile.mkstemp(
+        prefix=f"backup_user_{user.id}_",
+        suffix=".json"
+    )
 
-    with open(file_name, "w") as f:
+    with os.fdopen(fd, "w") as f:
 
         json.dump(data, f, indent=4)
 
+    @after_this_request
+    def _cleanup_backup_file(response):
+        try:
+            os.remove(file_name)
+        except Exception:
+            pass
+        return response
+
     return send_file(
         file_name,
-        as_attachment=True
+        as_attachment=True,
+        download_name=f"backup_user_{user.id}.json"
     )
 
 @app.route("/factory_reset")
@@ -4014,11 +4095,7 @@ def admin_verify():
             "admin_panel_password"
         )
 
-        actual_password = os.getenv(
-            "ADMIN_PANEL_PASSWORD"
-        )
-
-        if entered_password == actual_password:
+        if check_admin_password(entered_password):
 
             session["admin_panel_access"] = True
 
@@ -4056,7 +4133,7 @@ def upload_admin_profile():
 
     file = request.files.get("profile_pic")
 
-    if file and file.filename != "":
+    if file and file.filename != "" and allowed_file(file.filename):
 
         admin_profile = get_admin_profile()
 
@@ -4165,11 +4242,7 @@ def open_admin_panel():
             "admin_password"
         )
 
-        real_password = os.getenv(
-            "ADMIN_PANEL_PASSWORD"
-        )
-
-        if entered_password == real_password:
+        if check_admin_password(entered_password):
 
             session["admin_logged_in"] = True
 
@@ -4512,9 +4585,7 @@ def change_admin_password():
         "admin_username"
     )
 
-    if current_password != os.getenv(
-        "ADMIN_PANEL_PASSWORD"
-    ):
+    if not check_admin_password(current_password):
 
         return """
         <h2 style='color:red;text-align:center;margin-top:50px;'>
@@ -4522,27 +4593,17 @@ def change_admin_password():
         </h2>
         """
 
-    env_path = ".env"
+    if not new_password:
 
-    with open(env_path, "r") as file:
+        return """
+        <h2 style='color:red;text-align:center;margin-top:50px;'>
+        New Password Cannot Be Empty ❌
+        </h2>
+        """
 
-        lines = file.readlines()
-
-    with open(env_path, "w") as file:
-
-        for line in lines:
-
-            if line.startswith(
-                "ADMIN_PANEL_PASSWORD="
-            ):
-
-                file.write(
-                    f"ADMIN_PANEL_PASSWORD={new_password}\n"
-                )
-
-            else:
-
-                file.write(line)
+    profile = get_admin_profile()
+    profile.panel_password_hash = generate_password_hash(new_password)
+    db.session.commit()
 
     return redirect("/admin_security")
 
@@ -4562,27 +4623,9 @@ def change_admin_email():
         "new_email"
     )
 
-    env_path = ".env"
-
-    with open(env_path, "r") as file:
-
-        lines = file.readlines()
-
-    with open(env_path, "w") as file:
-
-        for line in lines:
-
-            if line.startswith(
-                "ADMIN_EMAIL="
-            ):
-
-                file.write(
-                    f"ADMIN_EMAIL={new_email}\n"
-                )
-
-            else:
-
-                file.write(line)
+    profile = get_admin_profile()
+    profile.email = new_email
+    db.session.commit()
 
     return redirect("/admin_security")
 
@@ -4640,18 +4683,26 @@ def forgot_admin_password():
 
         if security_answer == real_answer:
 
-            return f"""
-            <h2 style='
-                color:lime;
-                text-align:center;
-                margin-top:50px;
-            '>
+            # The password is stored hashed, so it can't be shown back —
+            # instead, let the admin set a brand-new one right here.
+            session["admin_password_reset_allowed"] = True
 
-            Your Admin Password Is:<br><br>
-
-            {os.getenv("ADMIN_PANEL_PASSWORD")}
-
+            return """
+            <h2 style='color:lime;text-align:center;margin-top:50px;'>
+            Security Answer Correct ✅<br><br>
+            Set a new admin password below:
             </h2>
+            <form method="POST" action="/set_new_admin_password"
+                  style="text-align:center;margin-top:20px;">
+                <input type="password" name="new_password"
+                       placeholder="New Admin Password" required
+                       style="padding:10px;border-radius:6px;">
+                <br><br>
+                <button type="submit"
+                        style="padding:10px 20px;border-radius:6px;">
+                    Set New Password
+                </button>
+            </form>
             """
 
         else:
@@ -4671,6 +4722,36 @@ def forgot_admin_password():
     return render_template(
         "forgot_admin_password.html"
     )
+
+
+@app.route("/set_new_admin_password", methods=["POST"])
+def set_new_admin_password():
+    """Completes the forgot-admin-password flow started above. Only
+    reachable right after answering the security question correctly in
+    this same session — never exposes or requires the old password."""
+
+    if not session.pop("admin_password_reset_allowed", False):
+        return redirect("/forgot_admin_password")
+
+    new_password = request.form.get("new_password")
+
+    if not new_password:
+        return """
+        <h2 style='color:red;text-align:center;margin-top:50px;'>
+        New Password Cannot Be Empty ❌
+        </h2>
+        """
+
+    profile = get_admin_profile()
+    profile.panel_password_hash = generate_password_hash(new_password)
+    db.session.commit()
+
+    return """
+    <h2 style='color:lime;text-align:center;margin-top:50px;'>
+    Admin Password Updated ✅<br><br>
+    You can log in with your new password now.
+    </h2>
+    """
 
 @app.route("/admin_user_expenses")
 @admin_required
@@ -4771,12 +4852,9 @@ def admin_backup():
 @admin_required
 def full_app_backup():
 
-    backup_folder = "backups"
-
-    os.makedirs(
-        backup_folder,
-        exist_ok=True
-    )
+    # OS temp dir: writable on Render AND on Vercel's read-only
+    # serverless filesystem, unlike a relative "backups" folder.
+    backup_folder = tempfile.mkdtemp(prefix="spendwise_full_backup_")
 
     backup_zip = os.path.join(
         backup_folder,
@@ -4855,11 +4933,17 @@ def full_app_backup():
                 "instance/expense_tracker.db"
             )
 
+    @after_this_request
+    def _cleanup_full_backup(response):
+        shutil.rmtree(backup_folder, ignore_errors=True)
+        return response
+
     return send_file(
 
         backup_zip,
 
-        as_attachment=True
+        as_attachment=True,
+        download_name="full_app_backup.zip"
     )
 
 
@@ -4877,12 +4961,9 @@ def backup_user(user_id):
 
         return "User Not Found"
 
-    backup_folder = "backups"
-
-    os.makedirs(
-        backup_folder,
-        exist_ok=True
-    )
+    # OS temp dir: writable on Render AND on Vercel's read-only
+    # serverless filesystem, unlike a relative "backups" folder.
+    backup_folder = tempfile.mkdtemp(prefix="spendwise_user_backup_")
 
     zip_name = (
         f"{user.username}_backup.zip"
@@ -4938,11 +5019,17 @@ def backup_user(user_id):
 
                     pass
 
+    @after_this_request
+    def _cleanup_user_backup(response):
+        shutil.rmtree(backup_folder, ignore_errors=True)
+        return response
+
     return send_file(
 
         zip_path,
 
-        as_attachment=True
+        as_attachment=True,
+        download_name=zip_name
     )
 
 
@@ -5308,25 +5395,6 @@ def clear_all_admin_login_records():
     db.session.commit()
 
     return redirect("/account_login_records")
-
-from sqlalchemy import text
-
-@app.route("/check_db_columns")
-def check_db_columns():
-
-    result = db.session.execute(text("""
-        SELECT
-            column_name,
-            data_type
-        FROM information_schema.columns
-        WHERE table_name = 'login_history'
-    """))
-
-    return "<br>".join(
-        f"{row.column_name} : {row.data_type}"
-        for row in result
-    )
-
 
 if __name__ == "__main__":
     app.run(debug=True)
