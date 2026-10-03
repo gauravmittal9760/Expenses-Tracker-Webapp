@@ -11,7 +11,7 @@
     >
 
     <title>
-        Printable Statement
+        {{ t('printable_statement') }}
     </title>
 
     <link
@@ -405,13 +405,13 @@
 
                 <div class="heading">
 
-                    Expense Statement 📄
+                    {{ t('expense_statement') }}
 
                 </div>
 
                 <div class="subtext">
 
-                    Printable financial transaction report
+                    {{ t('printable_financial_transaction_report') }}
 
                 </div>
 
@@ -419,7 +419,7 @@
 
             <div class="print-badge">
 
-                Auto Print Enabled 🖨️
+                {{ t('auto_print_enabled') }}
 
             </div>
 
@@ -433,11 +433,11 @@
 
                     <tr>
 
-                        <th>Category</th>
+                        <th>{{ t('category') }}</th>
 
-                        <th>Amount</th>
+                        <th>{{ t('amount') }}</th>
 
-                        <th>Date</th>
+                        <th>{{ t('date') }}</th>
 
                     </tr>
 
@@ -466,7 +466,7 @@
 
                             <span class="amount-pill">
 
-                                Rs.{{ expense.amount }}
+                                {{ currency_symbol }}{{ expense.amount | conv }}
 
                             </span>
 
@@ -502,7 +502,7 @@
                 class="print-btn"
             >
 
-                Print Again
+                {{ t('print_again') }}
 
             </button>
 

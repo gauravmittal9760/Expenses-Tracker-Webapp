@@ -11,7 +11,7 @@
     >
 
     <title>
-        Expense Memory Gallery
+        {{ t('expense_memory_gallery') }}
     </title>
 
     <link
@@ -388,13 +388,13 @@
 
             <h1 class="gallery-title">
 
-                Expense Memory Gallery 📸
+                {{ t('expense_memory_gallery_2') }}
 
             </h1>
 
             <p class="gallery-sub">
 
-                All your expense memories in one place
+                {{ t('all_your_expense_memories_in_one_place') }}
 
             </p>
 
@@ -463,7 +463,7 @@
 
                     <div class="expense-amount">
 
-                        Rs.{{ expense.amount }}
+                        {{ currency_symbol }}{{ expense.amount | conv }}
 
                     </div>
 
@@ -493,14 +493,13 @@
 
         <h2>
 
-            No Expense Images Found
+            {{ t('no_expense_images_found') }}
 
         </h2>
 
         <p>
 
-            Add expenses with images to build
-            your gallery.
+            {{ t('add_expenses_with_images_to_build_your_g') }}
 
         </p>
 
@@ -515,7 +514,7 @@
 
         <i class="fa-solid fa-arrow-left"></i>
 
-        Back
+        {{ t('back') }}
 
     </a>
 
@@ -533,7 +532,7 @@
         onclick="closeImage()"
     >
 
-        &times;
+        {{ t('times') }}
 
     </span>
 

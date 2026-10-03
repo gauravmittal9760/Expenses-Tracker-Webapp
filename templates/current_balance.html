@@ -4,7 +4,7 @@
 <head>
 
     <title>
-        Current Balance
+        {{ t('current_balance') }}
     </title>
 
     <link
@@ -337,13 +337,13 @@ input:-webkit-autofill:active {
 
                 <h1 class="title">
 
-                    Current Balance
+                    {{ t('current_balance') }}
 
                 </h1>
 
                 <p class="subtitle">
 
-                    Track your available balance in real-time and manage your finances more efficiently with smart budgeting.
+                    {{ t('track_your_available_balance_in_real_tim') }}
 
                 </p>
 
@@ -353,13 +353,13 @@ input:-webkit-autofill:active {
 
                     <div class="balance-label">
 
-                        Available Balance
+                        {{ t('available_balance') }}
 
                     </div>
 
                     <div class="balance-amount">
 
-                        ₹{{ balance }}
+                        {{ currency_symbol }}{{ balance | conv }}
 
                     </div>
 
@@ -369,7 +369,7 @@ input:-webkit-autofill:active {
 
                 <div class="info-box">
 
-                    💡 Your current balance updates automatically based on income entries and expense deductions inside your Expense Tracker.
+                    {{ t('your_current_balance_updates_automatical') }}
 
                 </div>
 
@@ -382,7 +382,7 @@ input:-webkit-autofill:active {
 
                     <i class="fa-solid fa-arrow-left me-2"></i>
 
-                    Back
+                    {{ t('back') }}
 
                 </a>
 

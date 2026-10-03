@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Edit Expenses | SpendWise</title>
+    <title>{{ t('edit_expenses_spendwise') }}</title>
 
     <!-- Bootstrap -->
     <link
@@ -1141,7 +1141,7 @@
 
             <i class="fa-solid fa-pen-to-square"></i>
 
-            Expense Management
+            {{ t('expense_management') }}
 
         </div>
 
@@ -1150,16 +1150,14 @@
 
             <i class="fa-solid fa-file-pen"></i>
 
-            Edit Expenses
+            {{ t('edit_expenses') }}
 
         </h1>
 
 
         <p class="hero-subtitle">
 
-            Select any expense below to update its details,
-
-            amount, category, date or other information.
+            {{ t('select_any_expense_below_to_update_its_d') }}
 
         </p>
 
@@ -1187,14 +1185,14 @@
 
                     </span>
 
-                    Your Expense Records
+                    {{ t('your_expense_records') }}
 
                 </h2>
 
 
                 <p class="section-description">
 
-                    Choose an expense to make changes.
+                    {{ t('choose_an_expense_to_make_changes') }}
 
                 </p>
 
@@ -1213,23 +1211,23 @@
         <div class="table-head">
 
             <span>
-                Preview
+                {{ t('preview') }}
             </span>
 
             <span>
-                Category
+                {{ t('category') }}
             </span>
 
             <span>
-                Amount
+                {{ t('amount') }}
             </span>
 
             <span>
-                Date
+                {{ t('date') }}
             </span>
 
             <span>
-                Action
+                {{ t('action') }}
             </span>
 
         </div>
@@ -1336,17 +1334,11 @@
 
                 <div class="amount-wrapper">
 
-                    <i
-                        class="
-                            fa-solid
-                            fa-indian-rupee-sign
-                            amount-icon
-                        "
-                    ></i>
+                    <span class="amount-icon">{{ currency_symbol }}</span>
 
                     <span class="amount-text">
 
-                        ₹{{ expense.amount }}
+                        {{ currency_symbol }}{{ expense.amount | conv }}
 
                     </span>
 
@@ -1389,7 +1381,7 @@
 
                         <i class="fa-solid fa-pen"></i>
 
-                        Edit
+                        {{ t('edit') }}
 
                     </a>
 
@@ -1424,16 +1416,14 @@
 
             <h4 class="mb-3">
 
-                No Expenses Found
+                {{ t('no_expenses_found') }}
 
             </h4>
 
 
             <p>
 
-                Your editable expenses will appear here
-
-                once you add some expenses.
+                {{ t('your_editable_expenses_will_appear_here_') }}
 
             </p>
 
@@ -1458,7 +1448,7 @@
 
             <i class="fa-solid fa-arrow-left"></i>
 
-            Back to Expense Management
+            {{ t('back_to_expense_management') }}
 
         </a>
 

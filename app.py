@@ -7,6 +7,7 @@ import pytz
 from functools import wraps
 import requests
 from sqlalchemy import extract , DateTime
+from sqlalchemy.types import TypeDecorator
 from email.message import EmailMessage
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
@@ -184,8 +185,277 @@ def ist_now():
     return datetime.now(pytz.utc).astimezone(india_time)
 
 
+class ISTDateTime(TypeDecorator):
+    """A timezone-aware DateTime column that always comes back out of
+    the database already converted to IST, no matter what session
+    timezone the DB connection (or a pooler like Neon's pgbouncer)
+    actually used when it stored/returned the value. This replaces
+    depending on `SET TIME ZONE` at connect time, which can silently
+    get reset between pooled connections/requests."""
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        if value.tzinfo is None:
+            # A naive value (can happen on SQLite) is UTC by convention
+            # everywhere else in this app (ist_now() stores real instants).
+            value = pytz.utc.localize(value)
+        return value.astimezone(india_time)
+
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# =========================================================
+# CURRENCY
+# =========================================================
+# Symbol + display-code for every currency the "Change Currency" page
+# offers. Only the symbol/label changes here — amounts already stored
+# in the database are NOT converted with exchange rates (there's no
+# FX-rate API in this project), so switching currency changes how
+# numbers are *labelled* everywhere, not their underlying value. This
+# matches how most personal finance apps handle a "display currency".
+CURRENCY_SYMBOLS = {
+    "INR": "₹",
+    "USD": "$",
+    "EUR": "€",
+    "GBP": "£",
+    "AED": "د.إ",
+    "JPY": "¥",
+    "AUD": "A$",
+    "CAD": "C$",
+    "SGD": "S$",
+    "CNY": "¥",
+    "CHF": "Fr",
+    "SAR": "SAR",
+}
+
+CURRENCY_NAMES = {
+    "INR": "Indian Rupee",
+    "USD": "US Dollar",
+    "EUR": "Euro",
+    "GBP": "British Pound",
+    "AED": "UAE Dirham",
+    "JPY": "Japanese Yen",
+    "AUD": "Australian Dollar",
+    "CAD": "Canadian Dollar",
+    "SGD": "Singapore Dollar",
+    "CNY": "Chinese Yuan",
+    "CHF": "Swiss Franc",
+    "SAR": "Saudi Riyal",
+}
+
+
+# =========================================================
+# REAL CURRENCY CONVERSION
+# =========================================================
+# Every amount in this app (Expense.amount, Budget.balance,
+# Budget.monthly_budget, User.income, SavingsGoal amounts) is always
+# STORED in the DB in one fixed base currency: INR. That never
+# changes, no matter what the user has selected to look at.
+#
+# What changes is:
+#   - DISPLAY: every amount shown in a template/PDF/CSV/Excel is
+#     converted from INR into the user's selected currency using a
+#     live exchange rate (convert_from_base).
+#   - INPUT: whenever the user types a new amount (a new expense,
+#     budget, income, goal), that number is treated as being written
+#     in their currently selected currency, and converted back into
+#     INR before it's saved (convert_to_base).
+#
+# This is what makes "select USD -> everything is in USD, budget,
+# income, goal, expenses, all of it" actually work, instead of just
+# swapping a symbol.
+#
+# Rates come from a free, no-API-key exchange rate service and are
+# cached in memory for a few hours so the app isn't making a network
+# call on every single page load (and still works fine if that
+# service is briefly down, via the fallback table below).
+
+BASE_CURRENCY = "INR"
+
+EXCHANGE_RATE_TTL_SECONDS = 6 * 60 * 60  # refresh at most every 6 hours
+
+_exchange_rate_cache = {
+    "rates": None,
+    "fetched_at": 0,
+}
+
+# Rough, manually-set rates (units of that currency per 1 INR), used
+# ONLY if the live exchange-rate service can't be reached. These will
+# drift out of date over time — they exist purely so the app keeps
+# working (rather than crashing or showing nothing) if there's no
+# network access to the rate service for a moment.
+FALLBACK_RATES_FROM_INR = {
+    "INR": 1.0,
+    "USD": 0.012,
+    "EUR": 0.011,
+    "GBP": 0.0094,
+    "AED": 0.044,
+    "JPY": 1.79,
+    "AUD": 0.018,
+    "CAD": 0.016,
+    "SGD": 0.016,
+    "CNY": 0.086,
+    "CHF": 0.0105,
+    "SAR": 0.045,
+}
+
+
+def get_exchange_rates():
+    """Returns {currency_code: rate_per_1_INR}, refreshed from a free
+    live exchange-rate API at most once every EXCHANGE_RATE_TTL_SECONDS.
+    Falls back to FALLBACK_RATES_FROM_INR if the API can't be reached
+    (no internet, timeout, service down, etc.) so the app never
+    crashes over this."""
+    now = time.time()
+
+    if (
+        _exchange_rate_cache["rates"]
+        and now - _exchange_rate_cache["fetched_at"] < EXCHANGE_RATE_TTL_SECONDS
+    ):
+        return _exchange_rate_cache["rates"]
+
+    try:
+        response = requests.get(
+            "https://open.er-api.com/v6/latest/INR",
+            timeout=5
+        )
+        data = response.json()
+
+        if data.get("result") == "success" and data.get("rates"):
+            _exchange_rate_cache["rates"] = data["rates"]
+            _exchange_rate_cache["fetched_at"] = now
+            return data["rates"]
+
+    except Exception as e:
+        print("Exchange rate fetch failed, using fallback rates:", e)
+
+    # Live fetch failed and we have no usable cache yet -> fallback.
+    if not _exchange_rate_cache["rates"]:
+        return FALLBACK_RATES_FROM_INR
+
+    # We have a stale cache from earlier -> better than the rough
+    # fallback table, keep using it until the next successful fetch.
+    return _exchange_rate_cache["rates"]
+
+
+def convert_from_base(amount, to_currency):
+    """INR (as stored in the DB) -> the user's selected currency, for
+    display."""
+    if amount is None:
+        return 0
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return amount
+    if to_currency == BASE_CURRENCY:
+        return round(amount, 2)
+    rate = get_exchange_rates().get(to_currency)
+    if not rate:
+        return round(amount, 2)
+    return round(amount * rate, 2)
+
+
+def convert_to_base(amount, from_currency):
+    """The user's selected currency (what they typed into a form) ->
+    INR, for saving to the DB."""
+    if amount is None:
+        return 0
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return amount
+    if from_currency == BASE_CURRENCY:
+        return round(amount, 2)
+    rate = get_exchange_rates().get(from_currency)
+    if not rate:
+        return round(amount, 2)
+    return round(amount / rate, 2)
+
+
+@app.template_filter("conv")
+def jinja_convert_filter(amount):
+    """{{ expense.amount | conv }} in any template — converts a
+    base-currency (INR) value into whatever the current user has
+    selected, using the live rate."""
+    currency_code, _ = get_current_user_settings()
+    return convert_from_base(amount, currency_code)
+
+
+def get_current_user_settings():
+    """Returns (currency_code, language_code) for whoever is logged in
+    right now, falling back to INR/English for logged-out pages (the
+    login/signup screens etc.) so templates never crash for a missing
+    session."""
+    user_id = session.get("user_id")
+    if not user_id:
+        return "INR", "en"
+    user = User.query.get(user_id)
+    if not user:
+        return "INR", "en"
+    return (user.currency or "INR"), (getattr(user, "language", None) or "en")
+
+
+# =========================================================
+# LANGUAGE
+# =========================================================
+# Full page-by-page translation of every one of this app's screens
+# into every language below is a much bigger job than can be verified
+# in one pass, so this ships as a real, working framework: the
+# language is saved per-user, every template already gets a `t()`
+# translator function for free (see the context_processor below), and
+# the strings that ARE wired up (the ones covered in LANG_STRINGS)
+# switch instantly and correctly. Languages/keys not yet added simply
+# fall back to English rather than showing a blank or broken label —
+# safe to extend gradually, page by page.
+SUPPORTED_LANGUAGES = {
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+}
+
+# TRANSLATIONS holds EVERY static piece of text that was extracted out
+# of all 75 templates (~680 strings — menus, buttons, page headers,
+# helper text, admin screens, all of it). Each entry is
+# {"en": "<original text>", "hi": "<translation>", ...}. English and
+# Hindi are both 100% complete, which is why only those two appear in
+# SUPPORTED_LANGUAGES above — a language is only added to that list
+# once every key here has a real translation for it, so the dropdown
+# never offers a language that would silently fall back to English
+# halfway through the app. To add a new language: translate every
+# value in translations_data.py for that language code, then add it
+# to SUPPORTED_LANGUAGES above.
+from translations_data import TRANSLATIONS
+
+
+def t(key):
+    """Jinja-callable translator: {{ t('some_key') }}. Falls back to
+    English, then to the raw key itself, so a missing translation
+    never breaks a page — it just shows in English until that key is
+    added for that language."""
+    _, lang = get_current_user_settings()
+    entry = TRANSLATIONS.get(key)
+    if not entry:
+        return key
+    return entry.get(lang) or entry.get("en") or key
+
+
+@app.context_processor
+def inject_currency_and_language():
+    """Makes `currency_symbol`, `currency_code` and `t()` available in
+    EVERY template automatically, with no changes needed to any of the
+    individual render_template() calls throughout this file."""
+    currency_code, lang_code = get_current_user_settings()
+    return {
+        "currency_symbol": CURRENCY_SYMBOLS.get(currency_code, "₹"),
+        "currency_code": currency_code,
+        "current_language": lang_code,
+        "t": t,
+    }
+
 
 # =========================
 # CLOUDINARY HELPERS
@@ -322,11 +592,12 @@ class User(db.Model):
 
     income = db.Column(db.Float, default=0)
 
-    created_at = db.Column(DateTime(timezone=True),default=ist_now)
+    created_at = db.Column(ISTDateTime(),default=ist_now)
 
     two_step_enabled = db.Column(db.Boolean,default=False)
 
     currency = db.Column(db.String(20),default="INR")
+    language = db.Column(db.String(10),default="en")
 
     profile_pic = db.Column(db.String(300),default="default.png")
 
@@ -334,7 +605,7 @@ class User(db.Model):
 
     account_locked = db.Column(db.Boolean,default=False)
 
-    lock_time = db.Column(DateTime(timezone=True),nullable=True)
+    lock_time = db.Column(ISTDateTime(),nullable=True)
 
     is_locked = db.Column(db.Boolean,default=False)
 
@@ -403,7 +674,7 @@ class LoginHistory(db.Model):
     )
 
     login_time = db.Column(
-        DateTime(timezone=True),
+        ISTDateTime(),
         default=ist_now
     )
 
@@ -432,7 +703,7 @@ class UserActivityLog(db.Model):
     )
 
     action_time = db.Column(
-        DateTime(timezone=True),
+        ISTDateTime(),
         default=ist_now
     )
 
@@ -551,12 +822,14 @@ def set_budget():
 
     if request.method == "POST":
 
-        balance = int(
-            request.form.get("balance")
+        user_currency, _ = get_current_user_settings()
+
+        balance = convert_to_base(
+            request.form.get("balance"), user_currency
         )
 
-        monthly_budget = int(
-            request.form.get("monthly_budget")
+        monthly_budget = convert_to_base(
+            request.form.get("monthly_budget"), user_currency
         )
 
         if budget:
@@ -764,11 +1037,17 @@ def search_amount():
 
     if request.method == "POST":
 
-        amount = float(request.form.get("amount"))
+        cur = get_current_user_settings()[0]
+        amount = convert_to_base(request.form.get("amount"), cur)
 
-        expenses = Expense.query.filter_by(
-            amount=amount,
-            user_id=session["user_id"]
+        # amounts are stored converted + rounded, so match within a
+        # tiny tolerance instead of an exact float equality
+        tol = convert_to_base(0.01, cur) + 0.01
+
+        expenses = Expense.query.filter(
+            Expense.user_id == session["user_id"],
+            Expense.amount >= amount - tol,
+            Expense.amount <= amount + tol
         ).all()
 
     return render_template(
@@ -955,9 +1234,6 @@ def home():
                 session["username"] = (
                     user.username
                 )
-                print("UTC :", datetime.utcnow())
-
-                print("INDIA :", ist_now())
 
                 history = LoginHistory(
                     user_id=user.id,
@@ -965,19 +1241,9 @@ def home():
                     login_time=ist_now()
                 )
 
-                print("Before Add :", history.login_time)
-
                 db.session.add(history)
-
-                print("After Add :", history.login_time)
-
                 db.session.commit()
 
-                print("After Commit :", history.login_time)
-
-                db.session.refresh(history)
-
-                print("After Refresh :", history.login_time)
                 return redirect(
                     "/dashboard"
                 )
@@ -1603,7 +1869,9 @@ def add_expense():
         amount_str = request.form.get("amount")
 
         try:
-            amount = float(amount_str)
+            amount = convert_to_base(
+                float(amount_str), get_current_user_settings()[0]
+            )
         except:
             flash("Invalid amount")
             return redirect("/add_expense")
@@ -1712,7 +1980,9 @@ def edit_expense(id):
 
         expense.category = request.form["category"]
         expense.description = request.form["description"]
-        expense.amount = float(request.form["amount"])
+        expense.amount = convert_to_base(
+            request.form["amount"], get_current_user_settings()[0]
+        )
         expense.date = datetime.strptime(
             request.form["date"], "%Y-%m-%d"
         ).date()
@@ -2832,12 +3102,12 @@ def add_income():
 
     if request.method == "POST":
 
-        income = float(
-            request.form["income"]
-        )
-
         user = User.query.get(
             session["user_id"]
+        )
+
+        income = convert_to_base(
+            request.form["income"], user.currency or "INR"
         )
 
         user.income += income
@@ -2865,8 +3135,8 @@ def edit_budget():
 
     if request.method == "POST":
 
-        user.budget = float(
-            request.form["budget"]
+        user.budget = convert_to_base(
+            request.form["budget"], user.currency or "INR"
         )
 
         db.session.commit()
@@ -2914,15 +3184,18 @@ def savings_goal():
 
         goal_name = request.form["goal_name"]
 
-        goal_amount = float(
-            request.form["goal_amount"]
+        user_currency, _ = get_current_user_settings()
+
+        goal_amount = convert_to_base(
+            request.form["goal_amount"], user_currency
         )
 
-        saved_amount = float(
+        saved_amount = convert_to_base(
             request.form.get(
                 "saved_amount",
                 0
-            )
+            ) or 0,
+            user_currency
         )
 
         goal = SavingsGoal(
@@ -2966,15 +3239,18 @@ def edit_goal(id):
 
         goal.goal_name = request.form["goal_name"]
 
-        goal.goal_amount = float(
-            request.form["goal_amount"]
+        user_currency, _ = get_current_user_settings()
+
+        goal.goal_amount = convert_to_base(
+            request.form["goal_amount"], user_currency
         )
 
-        goal.saved_amount = float(
+        goal.saved_amount = convert_to_base(
             request.form.get(
                 "saved_amount",
                 0
-            )
+            ) or 0,
+            user_currency
         )
 
         db.session.commit()
@@ -3057,9 +3333,13 @@ def export_csv():
         "include_description"
     )
 
-    file_name = f"""
-expenses_{session['user_id']}.csv
-""".strip()
+    user_currency, _ = get_current_user_settings()
+
+    fd, file_name = tempfile.mkstemp(
+        prefix=f"expenses_{session['user_id']}_",
+        suffix=".csv"
+    )
+    os.close(fd)
 
     with open(
 
@@ -3078,7 +3358,7 @@ expenses_{session['user_id']}.csv
         headers = [
 
             "Category",
-            "Amount",
+            f"Amount ({user_currency})",
             "Date"
 
         ]
@@ -3096,7 +3376,7 @@ expenses_{session['user_id']}.csv
             row = [
 
                 expense.category,
-                expense.amount,
+                convert_from_base(expense.amount, user_currency),
                 expense.date
 
             ]
@@ -3109,11 +3389,20 @@ expenses_{session['user_id']}.csv
 
             writer.writerow(row)
 
+    @after_this_request
+    def _cleanup_csv(response):
+        try:
+            os.remove(file_name)
+        except Exception:
+            pass
+        return response
+
     return send_file(
 
         file_name,
 
-        as_attachment=True
+        as_attachment=True,
+        download_name=f"expenses_{session['user_id']}.csv"
 
     )
 
@@ -3132,6 +3421,8 @@ def export_all_pdf():
     expenses = Expense.query.filter_by(
         user_id=session["user_id"]
     ).all()
+
+    user_currency, _ = get_current_user_settings()
 
     pdf = FPDF()
 
@@ -3166,7 +3457,7 @@ def export_all_pdf():
 
         line = (
             f"{expense.category} | "
-            f"Rs.{expense.amount} | "
+            f"{user_currency} {convert_from_base(expense.amount, user_currency)} | "
             f"{expense.date}"
         )
 
@@ -3187,15 +3478,20 @@ def export_all_pdf():
     pdf.cell(
         200,
         10,
-        txt=f"Total Spending: Rs.{total}",
+        txt=f"Total Spending: {user_currency} {convert_from_base(total, user_currency)}",
         ln=True
     )
 
-    file_name = f"expense_report_{session['user_id']}.pdf"
+    fd, file_name = tempfile.mkstemp(
+        prefix=f"expense_report_{session['user_id']}_",
+        suffix=".pdf"
+    )
+    os.close(fd)
     pdf.output(file_name)
 
     response = send_file(
-       file_name, as_attachment=True
+       file_name, as_attachment=True,
+       download_name=f"expense_report_{session['user_id']}.pdf"
     )
     os.remove(file_name)
     return response
@@ -3208,6 +3504,8 @@ def export_monthly_pdf():
     expenses = Expense.query.filter_by(
         user_id=session["user_id"]
     ).all()
+
+    user_currency, _ = get_current_user_settings()
 
     pdf = FPDF()
 
@@ -3239,7 +3537,7 @@ def export_monthly_pdf():
 
             10,
 
-            f"{expense.category} | Rs.{expense.amount}"
+            f"{expense.category} | {user_currency} {convert_from_base(expense.amount, user_currency)}"
 
         )
 
@@ -3251,15 +3549,20 @@ def export_monthly_pdf():
 
         10,
 
-        txt=f"Monthly Total: Rs.{total}",
+        txt=f"Monthly Total: {user_currency} {convert_from_base(total, user_currency)}",
 
         ln=True
 
     )
 
-    file_name = f"monthly_{session['user_id']}_{int(time.time())}.pdf"
+    fd, file_name = tempfile.mkstemp(
+        prefix=f"monthly_{session['user_id']}_",
+        suffix=".pdf"
+    )
+    os.close(fd)
     pdf.output(file_name)
-    response = send_file(file_name, as_attachment=True
+    response = send_file(file_name, as_attachment=True,
+       download_name=f"monthly_report_{session['user_id']}.pdf"
     )
 
     os.remove(file_name)
@@ -3304,6 +3607,8 @@ def generate_date_pdf():
 
     ).all()
 
+    user_currency, _ = get_current_user_settings()
+
     pdf = FPDF()
 
     pdf.add_page()
@@ -3325,7 +3630,7 @@ def generate_date_pdf():
 
             10,
 
-            f"{expense.category} | Rs.{expense.amount}"
+            f"{expense.category} | {user_currency} {convert_from_base(expense.amount, user_currency)}"
 
         )
 
@@ -3337,21 +3642,22 @@ def generate_date_pdf():
 
         10,
 
-        txt=f"Total: Rs.{total}",
+        txt=f"Total: {user_currency} {convert_from_base(total, user_currency)}",
 
         ln=True
 
     )
 
-    pdf.output(
-        "date_range_report.pdf"
+    fd, file_name = tempfile.mkstemp(
+        prefix=f"date_range_report_{session['user_id']}_",
+        suffix=".pdf"
     )
-    file_name = "date_range_report.pdf"
-
+    os.close(fd)
     pdf.output(file_name)
     response = send_file(
 
-        file_name, as_attachment=True
+        file_name, as_attachment=True,
+        download_name="date_range_report.pdf"
     )
     os.remove(file_name)
     return response
@@ -3372,6 +3678,8 @@ def export_excel():
         "include_description"
     )
 
+    user_currency, _ = get_current_user_settings()
+
     data = []
 
     for expense in expenses:
@@ -3379,7 +3687,7 @@ def export_excel():
         row = {
 
             "Category": expense.category,
-            "Amount": expense.amount,
+            f"Amount ({user_currency})": convert_from_base(expense.amount, user_currency),
             "Date": expense.date
 
         }
@@ -3394,9 +3702,11 @@ def export_excel():
 
     df = pd.DataFrame(data)
 
-    file_name = f"""
-expenses_{session['user_id']}.xlsx
-""".strip()
+    fd, file_name = tempfile.mkstemp(
+        prefix=f"expenses_{session['user_id']}_",
+        suffix=".xlsx"
+    )
+    os.close(fd)
 
     df.to_excel(
 
@@ -3406,11 +3716,20 @@ expenses_{session['user_id']}.xlsx
 
     )
 
+    @after_this_request
+    def _cleanup_excel(response):
+        try:
+            os.remove(file_name)
+        except Exception:
+            pass
+        return response
+
     return send_file(
 
         file_name,
 
-        as_attachment=True
+        as_attachment=True,
+        download_name=f"expenses_{session['user_id']}.xlsx"
 
     )
 
@@ -3436,6 +3755,7 @@ def print_statement():
 def advanced_export_pdf():
 
     user_id = session["user_id"]
+    user_currency, _ = get_current_user_settings()
 
     # =========================================
     # FILTERS
@@ -3571,8 +3891,8 @@ def advanced_export_pdf():
 
     pdf.set_font("Arial", "", 12)
     pdf.cell(190, 8, f"Total Expenses : {total_expenses}", ln=True)
-    pdf.cell(190, 8, f"Total Spending : Rs. {total_spending}", ln=True)
-    pdf.cell(190, 8, f"Average Expense : Rs. {average_expense}", ln=True)
+    pdf.cell(190, 8, f"Total Spending : {user_currency} {convert_from_base(total_spending, user_currency)}", ln=True)
+    pdf.cell(190, 8, f"Average Expense : {user_currency} {convert_from_base(average_expense, user_currency)}", ln=True)
 
     pdf.ln(10)
 
@@ -3618,7 +3938,7 @@ def advanced_export_pdf():
         for expense in expenses:
 
             pdf.cell(50, 10, str(expense.category), 1)
-            pdf.cell(35, 10, f"Rs. {expense.amount}", 1)
+            pdf.cell(35, 10, f"{user_currency} {convert_from_base(expense.amount, user_currency)}", 1)
             pdf.cell(45, 10, str(expense.date), 1)
 
             if include_description:
@@ -3923,6 +4243,13 @@ def change_currency():
             "currency"
         )
 
+        if currency not in CURRENCY_SYMBOLS:
+            flash(
+                "Unsupported currency selected ❌",
+                "danger"
+            )
+            return redirect("/change_currency")
+
         user.currency = currency
 
         db.session.commit()
@@ -3937,7 +4264,54 @@ def change_currency():
         )
 
     return render_template(
-        "change_currency.html"
+        "change_currency.html",
+        currencies=CURRENCY_SYMBOLS,
+        currency_names=CURRENCY_NAMES,
+        active_currency=user.currency or "INR"
+    )
+
+
+@app.route(
+    "/change_language",
+    methods=["GET", "POST"]
+)
+@login_required
+def change_language():
+
+    user = User.query.get(
+        session["user_id"]
+    )
+
+    if request.method == "POST":
+
+        language = request.form.get(
+            "language"
+        )
+
+        if language not in SUPPORTED_LANGUAGES:
+            flash(
+                "Unsupported language selected ❌",
+                "danger"
+            )
+            return redirect("/change_language")
+
+        user.language = language
+
+        db.session.commit()
+
+        flash(
+            "Language changed successfully 🌐",
+            "success"
+        )
+
+        return redirect(
+            "/change_language"
+        )
+
+    return render_template(
+        "change_language.html",
+        languages=SUPPORTED_LANGUAGES,
+        active_language=user.language or "en"
     )
 
 @app.route("/backup_account")
@@ -5218,10 +5592,6 @@ def user_login_records(user_id):
         .order_by(LoginHistory.login_time.desc())
         .all()
     )
-
-    for record in login_records:
-        print(record.login_time)
-        print(record.login_time.tzinfo)
 
     return render_template(
 

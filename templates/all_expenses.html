@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>All Expenses | SpendWise</title>
+    <title>{{ t('all_expenses_spendwise') }}</title>
 
     <!-- Bootstrap -->
     <link
@@ -1053,21 +1053,21 @@
 
                 <i class="fa-solid fa-wallet"></i>
 
-                Expense Records Dashboard
+                {{ t('expense_records_dashboard') }}
 
             </div>
 
 
             <h1 class="hero-title">
 
-                All Expenses
+                {{ t('all_expenses') }}
 
             </h1>
 
 
             <p class="hero-subtitle">
 
-                View and track all your expenses in one smart dashboard.
+                {{ t('view_and_track_all_your_expenses_in_one_') }}
 
             </p>
 
@@ -1091,19 +1091,19 @@
                         <tr>
 
                             <th>
-                                Category
+                                {{ t('category') }}
                             </th>
 
                             <th>
-                                Description
+                                {{ t('description') }}
                             </th>
 
                             <th>
-                                Amount
+                                {{ t('amount') }}
                             </th>
 
                             <th>
-                                Date
+                                {{ t('date') }}
                             </th>
 
                         </tr>
@@ -1146,7 +1146,7 @@
 
                                         <span class="text-secondary">
 
-                                            No Description
+                                            {{ t('no_description') }}
 
                                         </span>
 
@@ -1163,7 +1163,7 @@
 
                                 <div class="amount-box">
 
-                                    ₹{{ expense.amount }}
+                                    {{ currency_symbol }}{{ expense.amount | conv }}
 
                                 </div>
 
@@ -1215,14 +1215,14 @@
 
                 <h3 class="mb-3">
 
-                    No Expenses Found
+                    {{ t('no_expenses_found') }}
 
                 </h3>
 
 
                 <p>
 
-                    Your expenses will appear here once you add them.
+                    {{ t('your_expenses_will_appear_here_once_you_') }}
 
                 </p>
 
@@ -1247,7 +1247,7 @@
 
                 <i class="fa-solid fa-arrow-left me-2"></i>
 
-                Back
+                {{ t('back') }}
 
             </a>
 

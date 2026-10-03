@@ -4,7 +4,7 @@
 <head>
 
     <title>
-        Edit Goal
+        {{ t('edit_goal') }}
     </title>
 
     <link
@@ -463,11 +463,11 @@ input:-webkit-autofill:active {
                     </div>
 
                     <h1>
-                        Edit Goal
+                        {{ t('edit_goal') }}
                     </h1>
 
                     <p>
-                        Update your savings target and track your progress
+                        {{ t('update_your_savings_target_and_track_you') }}
                     </p>
 
                 </div>
@@ -483,11 +483,11 @@ input:-webkit-autofill:active {
                         <div class="stats-box">
 
                             <h5>
-                                Current Goal
+                                {{ t('current_goal') }}
                             </h5>
 
                             <h3>
-                                ₹{{ goal.goal_amount }}
+                                {{ currency_symbol }}{{ goal.goal_amount | conv }}
                             </h3>
 
                         </div>
@@ -495,11 +495,11 @@ input:-webkit-autofill:active {
                         <div class="stats-box">
 
                             <h5>
-                                Saved Amount
+                                {{ t('saved_amount') }}
                             </h5>
 
                             <h3>
-                                ₹{{ goal.saved_amount }}
+                                {{ currency_symbol }}{{ goal.saved_amount | conv }}
                             </h3>
 
                         </div>
@@ -512,7 +512,7 @@ input:-webkit-autofill:active {
 
                         <label class="field-label">
 
-                            Goal Name
+                            {{ t('goal_name') }}
 
                         </label>
 
@@ -535,7 +535,7 @@ input:-webkit-autofill:active {
 
                         <label class="field-label">
 
-                            Goal Amount
+                            {{ t('goal_amount') }}
 
                         </label>
 
@@ -548,7 +548,7 @@ input:-webkit-autofill:active {
                                 step="0.01"
                                 name="goal_amount"
                                 class="form-control custom-input"
-                                value="{{ goal.goal_amount }}"
+                                value="{{ goal.goal_amount | conv }}"
                                 placeholder="Enter Goal Amount"
                                 required
                             >
@@ -559,7 +559,7 @@ input:-webkit-autofill:active {
 
                         <label class="field-label">
 
-                            Saved Amount
+                            {{ t('saved_amount') }}
 
                         </label>
 
@@ -572,7 +572,7 @@ input:-webkit-autofill:active {
                                 step="0.01"
                                 name="saved_amount"
                                 class="form-control custom-input"
-                                value="{{ goal.saved_amount }}"
+                                value="{{ goal.saved_amount | conv }}"
                                 placeholder="Enter Saved Amount"
                             >
 
@@ -587,7 +587,7 @@ input:-webkit-autofill:active {
 
                             <i class="bi bi-check-circle-fill"></i>
 
-                            Update Goal
+                            {{ t('update_goal') }}
 
                         </button>
 
@@ -595,7 +595,7 @@ input:-webkit-autofill:active {
 
                     <div class="bottom-text">
 
-                        Your goal progress updates instantly after saving changes.
+                        {{ t('your_goal_progress_updates_instantly_aft') }}
 
                     </div>
 

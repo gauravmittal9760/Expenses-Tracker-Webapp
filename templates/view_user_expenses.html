@@ -13,7 +13,7 @@
 >
 
 <title>
-    View User Expenses
+    {{ t('view_user_expenses') }}
 </title>
 
 <link
@@ -511,7 +511,7 @@
 
     <p>
 
-        Advanced admin analytics dashboard for user spending insights.
+        {{ t('advanced_admin_analytics_dashboard_for_u') }}
 
     </p>
 
@@ -537,7 +537,7 @@
 
             <p>
 
-                Total Expenses
+                {{ t('total_expenses') }}
 
             </p>
 
@@ -557,13 +557,13 @@
 
             <h2>
 
-                ₹{{ expenses | sum(attribute='amount') }}
+                {{ currency_symbol }}{{ (expenses | sum(attribute='amount')) | conv }}
 
             </h2>
 
             <p>
 
-                Total Spending
+                {{ t('total_spending') }}
 
             </p>
 
@@ -589,7 +589,7 @@
 
             <p>
 
-                Expenses With Images
+                {{ t('expenses_with_images') }}
 
             </p>
 
@@ -610,23 +610,23 @@
                 <tr>
 
                     <th>
-                        Category
+                        {{ t('category') }}
                     </th>
 
                     <th>
-                        Amount
+                        {{ t('amount') }}
                     </th>
 
                     <th>
-                        Description
+                        {{ t('description') }}
                     </th>
 
                     <th>
-                        Date
+                        {{ t('date') }}
                     </th>
 
                     <th>
-                        Images
+                        {{ t('images') }}
                     </th>
 
                 </tr>
@@ -653,7 +653,7 @@
 
                         <span class="amount-text">
 
-                            ₹{{ expense.amount }}
+                            {{ currency_symbol }}{{ expense.amount | conv }}
 
                         </span>
 
@@ -732,7 +732,7 @@
 
         <i class="fa-solid fa-arrow-left"></i>
 
-        Back To User Management
+        {{ t('back_to_user_management') }}
 
     </a>
 
@@ -751,7 +751,7 @@
     class="close-modal"
     onclick="closeImage()"
 >
-    &times;
+    {{ t('times') }}
 </span>
 
 <img id="zoomedImage">

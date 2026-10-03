@@ -5,7 +5,7 @@
 <head>
 
 <title>
-    Filter Expenses
+    {{ t('filter_expenses') }}
 </title>
 
 <link
@@ -489,13 +489,12 @@ input:-webkit-autofill:active {
         <div class="title-box">
 
             <h1>
-                Filter Expenses 🔍
+                {{ t('filter_expenses_2') }}
             </h1>
 
             <p>
 
-                View filtered expense records in a clean financial dashboard
-                layout with modern analytics inspired styling.
+                {{ t('view_filtered_expense_records_in_a_clean') }}
 
             </p>
 
@@ -504,7 +503,7 @@ input:-webkit-autofill:active {
         <div class="status-card">
 
             <h5>
-                FILTERED RESULTS
+                {{ t('filtered_results') }}
             </h5>
 
             <h2>
@@ -532,11 +531,11 @@ input:-webkit-autofill:active {
             <div>
 
                 <h3>
-                    Expense Records
+                    {{ t('expense_records') }}
                 </h3>
 
                 <p>
-                    Smart filtered transaction history
+                    {{ t('smart_filtered_transaction_history') }}
                 </p>
 
             </div>
@@ -552,15 +551,15 @@ input:-webkit-autofill:active {
                     <tr>
 
                         <th>
-                            Category
+                            {{ t('category') }}
                         </th>
 
                         <th>
-                            Amount
+                            {{ t('amount') }}
                         </th>
 
                         <th>
-                            Date
+                            {{ t('date') }}
                         </th>
 
                     </tr>
@@ -589,7 +588,7 @@ input:-webkit-autofill:active {
 
                             <span class="amount-box">
 
-                                Rs.{{ expense.amount }}
+                                {{ currency_symbol }}{{ expense.amount | conv }}
 
                             </span>
 
@@ -627,7 +626,7 @@ input:-webkit-autofill:active {
 
             <i class="fa-solid fa-circle-info me-2"></i>
 
-            Showing filtered expense entries from your financial records.
+            {{ t('showing_filtered_expense_entries_from_yo') }}
 
         </div>
 
@@ -638,7 +637,7 @@ input:-webkit-autofill:active {
 
             <i class="fa-solid fa-arrow-left"></i>
 
-            Back
+            {{ t('back') }}
 
         </a>
 

@@ -11,7 +11,7 @@
     >
 
     <title>
-        Search Category
+        {{ t('search_category') }}
     </title>
 
     <link
@@ -380,13 +380,13 @@ input:-webkit-autofill:active {
 
         <h1 class="main-title">
 
-            Search By Category
+            {{ t('search_by_category') }}
 
         </h1>
 
         <p class="subtitle">
 
-            Quickly find all expenses from a specific category 💸
+            {{ t('quickly_find_all_expenses_from_a_specifi') }}
 
         </p>
 
@@ -412,7 +412,7 @@ input:-webkit-autofill:active {
 
                         <i class="bi bi-search me-2"></i>
 
-                        Search
+                        {{ t('search') }}
 
                     </button>
 
@@ -436,7 +436,7 @@ input:-webkit-autofill:active {
 
                 <i class="bi bi-bar-chart-fill me-2 text-info"></i>
 
-                Search Results
+                {{ t('search_results') }}
 
             </h2>
 
@@ -457,15 +457,15 @@ input:-webkit-autofill:active {
                     <tr>
 
                         <th>
-                            Category
+                            {{ t('category') }}
                         </th>
 
                         <th>
-                            Amount
+                            {{ t('amount') }}
                         </th>
 
                         <th>
-                            Date
+                            {{ t('date') }}
                         </th>
 
                     </tr>
@@ -492,7 +492,7 @@ input:-webkit-autofill:active {
 
                             <span class="amount-text">
 
-                                ₹{{ expense.amount }}
+                                {{ currency_symbol }}{{ expense.amount | conv }}
 
                             </span>
 
@@ -529,12 +529,12 @@ input:-webkit-autofill:active {
         <i class="bi bi-emoji-frown"></i>
 
         <h3>
-            No Expenses Found
+            {{ t('no_expenses_found') }}
         </h3>
 
         <p class="mt-2">
 
-            Try searching with another category name.
+            {{ t('try_searching_with_another_category_name') }}
 
         </p>
 

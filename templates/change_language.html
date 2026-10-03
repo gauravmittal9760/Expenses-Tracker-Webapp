@@ -4,7 +4,7 @@
 <head>
 
     <title>
-        {{ t('change_currency') }}
+        {{ t('change_language') }}
     </title>
 
     <link
@@ -279,7 +279,7 @@
 
         .currency-preview span {
 
-            font-size: 24px;
+            font-size: 20px;
 
             font-weight: 800;
 
@@ -331,15 +331,15 @@ input:-webkit-autofill:active {
 
                     <h1 class="title">
 
-                        <i class="fa-solid fa-money-bill-transfer me-2"></i>
+                        <i class="fa-solid fa-language me-2"></i>
 
-                        {{ t('change_currency') }}
+                        {{ t('change_language') }}
 
                     </h1>
 
                     <p class="subtitle mt-3">
 
-                        {{ t('customize_your_preferred_currency_for_al') }}
+                        {{ t('choose_the_language_you_d_like_to_use_ac') }}
 
                     </p>
 
@@ -372,13 +372,13 @@ input:-webkit-autofill:active {
                     <div>
 
                         <h5>
-                            {{ t('active_currency') }}
+                            {{ t('active_language') }}
                         </h5>
 
                     </div>
 
-                    <span id="activeCurrencySymbol">
-                        {{ currencies.get(active_currency, "₹") }}
+                    <span id="activeLanguageLabel">
+                        {{ languages.get(active_language, "English") }}
                     </span>
 
                 </div>
@@ -393,24 +393,23 @@ input:-webkit-autofill:active {
 
                             <label class="form-label mb-3 fw-semibold">
 
-                                {{ t('select_currency') }}
+                                {{ t('select_language') }}
 
                             </label>
 
                             <select
-                                name="currency"
+                                name="language"
                                 class="form-select"
-                                id="currencySelect"
-                                onchange="document.getElementById('activeCurrencySymbol').textContent = this.options[this.selectedIndex].getAttribute('data-symbol');"
+                                id="languageSelect"
+                                onchange="document.getElementById('activeLanguageLabel').textContent = this.options[this.selectedIndex].text;"
                             >
 
-                                {% for code, symbol in currencies.items() %}
+                                {% for code, label in languages.items() %}
                                 <option
                                     value="{{ code }}"
-                                    data-symbol="{{ symbol }}"
-                                    {% if code == active_currency %}selected{% endif %}
+                                    {% if code == active_language %}selected{% endif %}
                                 >
-                                    {{ symbol }} &nbsp; {{ code }} — {{ currency_names.get(code, code) }}
+                                    {{ label }}
                                 </option>
                                 {% endfor %}
 
@@ -424,7 +423,7 @@ input:-webkit-autofill:active {
 
                             <i class="fa-solid fa-floppy-disk me-2"></i>
 
-                            {{ t('save_currency') }}
+                            {{ t('save_language') }}
 
                         </button>
 

@@ -11,7 +11,7 @@
     >
 
     <title>
-        AI Expense Insights
+        {{ t('ai_expense_insights') }}
     </title>
 
     <link
@@ -874,22 +874,21 @@
 
             <i class="fa-solid fa-robot"></i>
 
-            AI Powered Expense Intelligence
+            {{ t('ai_powered_expense_intelligence') }}
 
         </div>
 
 
         <h1 class="hero-title">
 
-            AI Expense Insights
+            {{ t('ai_expense_insights') }}
 
         </h1>
 
 
         <p class="hero-subtitle">
 
-            Smart analysis of your spending habits, financial patterns,
-            and saving opportunities using your actual expense data.
+            {{ t('smart_analysis_of_your_spending_habits_f') }}
 
         </p>
 
@@ -917,21 +916,21 @@
 
                 <div class="stats-label">
 
-                    Total Expenses
+                    {{ t('total_expenses') }}
 
                 </div>
 
 
                 <div class="stats-value">
 
-                    ₹{{ total_expense }}
+                    {{ currency_symbol }}{{ total_expense | conv }}
 
                 </div>
 
 
                 <div class="stats-extra">
 
-                    Overall amount spent across all categories.
+                    {{ t('overall_amount_spent_across_all_categori') }}
 
                 </div>
 
@@ -954,7 +953,7 @@
 
                 <div class="stats-label">
 
-                    Highest Spending Category
+                    {{ t('highest_spending_category') }}
 
                 </div>
 
@@ -968,7 +967,7 @@
 
                 <div class="stats-extra">
 
-                    ₹{{ highest_amount }}
+                    {{ currency_symbol }}{{ highest_amount | conv }}
 
                 </div>
 
@@ -994,7 +993,7 @@
 
             </div>
 
-            AI Insight
+            {{ t('ai_insight') }}
 
         </div>
 
@@ -1023,7 +1022,7 @@
 
             </div>
 
-            AI Savings Advice
+            {{ t('ai_savings_advice') }}
 
         </div>
 
@@ -1045,7 +1044,7 @@
                 {% endfor %}
             {% else %}
                 <div class="advice-line">
-                    Continue recording expenses to generate personalized financial advice.
+                    {{ t('continue_recording_expenses_to_generate_') }}
                 </div>
             {% endif %}
         </div>
@@ -1080,13 +1079,13 @@
 
                         <h3 class="ml-card-title">
 
-                            ML Spending Forecast
+                            {{ t('ml_spending_forecast') }}
 
                         </h3>
 
                         <div class="ml-card-subtitle">
 
-                            Machine-learning based prediction
+                            {{ t('machine_learning_based_prediction') }}
 
                         </div>
 
@@ -1097,15 +1096,14 @@
 
                 <div class="forecast-value">
 
-                    ₹{{ predicted_total }}
+                    {{ currency_symbol }}{{ predicted_total | conv }}
 
                 </div>
 
 
                 <p class="ml-description">
 
-                    Estimated spending for the next 30 days based on
-                    your historical spending patterns.
+                    {{ t('estimated_spending_for_the_next_30_days_') }}
 
                 </p>
 
@@ -1114,7 +1112,7 @@
 
                     <i class="fa-solid fa-circle-info"></i>
 
-                    Generated using your expense history.
+                    {{ t('generated_using_your_expense_history') }}
 
                 </div>
 
@@ -1144,13 +1142,13 @@
 
                         <h3 class="ml-card-title">
 
-                            Unusual Expenses
+                            {{ t('unusual_expenses') }}
 
                         </h3>
 
                         <div class="ml-card-subtitle">
 
-                            ML anomaly detection
+                            {{ t('ml_anomaly_detection') }}
 
                         </div>
 
@@ -1163,9 +1161,9 @@
 
                     <div class="anomaly-summary">
 
-                        ML detected
+                        {{ t('ml_detected') }}
                         <strong>{{ anomaly_count }}</strong>
-                        unusual expense(s) in your recorded spending.
+                        {{ t('unusual_expense_s_in_your_recorded_spend') }}
 
                     </div>
 
@@ -1202,7 +1200,7 @@
 
                                 <div class="anomaly-amount">
 
-                                    ₹{{ anomaly.amount }}
+                                    {{ currency_symbol }}{{ anomaly.amount | conv }}
 
                                 </div>
 
@@ -1227,8 +1225,7 @@
 
                         <i class="fa-solid fa-circle-check me-2"></i>
 
-                        No unusual spending pattern was detected
-                        in the available expense history.
+                        {{ t('no_unusual_spending_pattern_was_detected') }}
 
                     </div>
 
@@ -1255,7 +1252,7 @@
 
             <i class="fa-solid fa-arrow-left me-2"></i>
 
-            Back
+            {{ t('back') }}
 
         </a>
 

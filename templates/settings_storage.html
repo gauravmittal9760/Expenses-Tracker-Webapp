@@ -11,7 +11,7 @@
     >
 
     <title>
-        Settings & Storage
+        {{ t('settings_storage') }}
     </title>
 
     <link
@@ -451,13 +451,13 @@ input:-webkit-autofill:active {
 
                 <h1 class="main-title">
 
-                    ⚙️ Settings & Storage
+                    {{ t('settings_storage_2') }}
 
                 </h1>
 
                 <p class="sub-title">
 
-                    Secure your account, manage preferences and control your expense tracker experience.
+                    {{ t('secure_your_account_manage_preferences_a') }}
 
                 </p>
 
@@ -480,13 +480,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Two Step Verification
+                                {{ t('two_step_verification') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Add an extra security layer to your account
+                                {{ t('add_an_extra_security_layer_to_your_acco') }}
 
                             </div>
 
@@ -498,7 +498,7 @@ input:-webkit-autofill:active {
 
                     <span class="status-badge status-on">
 
-                        ENABLED
+                        {{ t('enabled') }}
 
                     </span>
 
@@ -506,7 +506,7 @@ input:-webkit-autofill:active {
 
                     <span class="status-badge status-off">
 
-                        DISABLED
+                        {{ t('disabled') }}
 
                     </span>
 
@@ -533,13 +533,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Change Password
+                                {{ t('change_password') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Update and secure your login password
+                                {{ t('update_and_secure_your_login_password') }}
 
                             </div>
 
@@ -570,13 +570,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Change Email
+                                {{ t('change_email') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Update your recovery and login email
+                                {{ t('update_your_recovery_and_login_email') }}
 
                             </div>
 
@@ -607,13 +607,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Security Question
+                                {{ t('security_question') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Manage your account recovery question
+                                {{ t('manage_your_account_recovery_question') }}
 
                             </div>
 
@@ -631,7 +631,7 @@ input:-webkit-autofill:active {
 
                     <div class="storage-title">
 
-                        💾 Storage Analytics
+                        {{ t('storage_analytics') }}
 
                     </div>
 
@@ -647,7 +647,7 @@ input:-webkit-autofill:active {
 
                             <p>
 
-                                MB Used
+                                {{ t('mb_used') }}
 
                             </p>
 
@@ -663,7 +663,7 @@ input:-webkit-autofill:active {
 
                             <p>
 
-                                Images Stored
+                                {{ t('images_stored') }}
 
                             </p>
 
@@ -692,13 +692,50 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Change Currency
+                                {{ t('change_currency') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Customize your preferred currency display
+                                {{ t('customize_your_preferred_currency_displa') }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <i class="fa-solid fa-angle-right"></i>
+
+                </a>
+
+                <!-- LANGUAGE -->
+
+                <a
+                    href="/change_language"
+                    class="setting-btn"
+                >
+
+                    <div class="left-section">
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-language"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="setting-title">
+
+                                {{ t('change_language') }}
+
+                            </div>
+
+                            <div class="setting-desc">
+
+                                {{ t('customize_your_preferred_app_language') }}
 
                             </div>
 
@@ -729,13 +766,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Restore & Backup
+                                {{ t('restore_backup') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Backup your account and restore saved data
+                                {{ t('backup_your_account_and_restore_saved_da') }}
 
                             </div>
 
@@ -766,13 +803,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Factory Reset
+                                {{ t('factory_reset') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Remove all expenses, goals and reports
+                                {{ t('remove_all_expenses_goals_and_reports') }}
 
                             </div>
 
@@ -803,13 +840,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Delete My Account
+                                {{ t('delete_my_account') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Permanently remove your account forever
+                                {{ t('permanently_remove_your_account_forever') }}
 
                             </div>
 
@@ -840,13 +877,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Back To Dashboard
+                                {{ t('back_to_dashboard') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Return to your expense dashboard
+                                {{ t('return_to_your_expense_dashboard') }}
 
                             </div>
 

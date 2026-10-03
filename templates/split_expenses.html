@@ -11,7 +11,7 @@
     >
 
     <title>
-        Split Expenses
+        {{ t('split_expenses') }}
     </title>
 
     <link
@@ -456,13 +456,13 @@
 
         <h1 class="main-title">
 
-            Split Expenses
+            {{ t('split_expenses') }}
 
         </h1>
 
         <p class="sub-title">
 
-            Instantly calculate how much each person needs to pay.
+            {{ t('instantly_calculate_how_much_each_person') }}
         </p>
 
         <div class="floating-stats">
@@ -472,7 +472,7 @@
                 <i class="fa-solid fa-money-bill-wave"></i>
 
                 <p>
-                    Smart Calculation
+                    {{ t('smart_calculation') }}
                 </p>
 
             </div>
@@ -482,7 +482,7 @@
                 <i class="fa-solid fa-user-group"></i>
 
                 <p>
-                    Group Splitting
+                    {{ t('group_splitting') }}
                 </p>
 
             </div>
@@ -492,7 +492,7 @@
                 <i class="fa-solid fa-bolt"></i>
 
                 <p>
-                    Instant Result
+                    {{ t('instant_result') }}
                 </p>
 
             </div>
@@ -505,7 +505,7 @@
 
             <label class="form-label">
 
-                Total Amount
+                {{ t('total_amount') }}
 
             </label>
 
@@ -513,7 +513,7 @@
 
                 <span class="input-group-text">
 
-                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <span class="currency-icon">{{ currency_symbol }}</span>
 
                 </span>
 
@@ -531,7 +531,7 @@
 
             <label class="form-label">
 
-                Number of People
+                {{ t('number_of_people') }}
 
             </label>
 
@@ -562,7 +562,7 @@
 
                 <i class="fa-solid fa-calculator"></i>
 
-                Split Now
+                {{ t('split_now') }}
 
             </button>
 
@@ -576,13 +576,13 @@
 
             <h5>
 
-                💸 Each Person Pays
+                {{ t('each_person_pays') }}
 
             </h5>
 
             <div class="result-amount">
 
-                ₹ {{ result }}
+                {{ currency_symbol }} {{ result }}
 
             </div>
 
@@ -599,7 +599,7 @@
 
             <i class="fa-solid fa-arrow-left"></i>
 
-            Back
+            {{ t('back') }}
 
         </a>
 

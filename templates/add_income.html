@@ -4,7 +4,7 @@
 <head>
 
     <title>
-        Add Income
+        {{ t('add_income') }}
     </title>
 
     <link
@@ -371,7 +371,7 @@ input:-webkit-autofill:active {
 
                     <i class="fa-solid fa-wallet"></i>
 
-                    Manage Your Income Smartly
+                    {{ t('manage_your_income_smartly') }}
 
                 </div>
 
@@ -379,13 +379,13 @@ input:-webkit-autofill:active {
 
             <h1 class="income-title">
 
-                Add Income 💵
+                {{ t('add_income_2') }}
 
             </h1>
 
             <p class="income-subtitle">
 
-                Keep your financial records updated and organized.
+                {{ t('keep_your_financial_records_updated_and_') }}
 
             </p>
 
@@ -395,13 +395,13 @@ input:-webkit-autofill:active {
 
                     <label class="input-label">
 
-                        Enter Income Amount
+                        {{ t('enter_income_amount') }}
 
                     </label>
 
                     <div class="input-group-custom">
 
-                        <i class="fa-solid fa-indian-rupee-sign"></i>
+                        <span class="currency-icon">{{ currency_symbol }}</span>
 
                         <input
                             type="number"
@@ -422,7 +422,7 @@ input:-webkit-autofill:active {
 
                     <i class="fa-solid fa-floppy-disk me-2"></i>
 
-                    Save Income
+                    {{ t('save_income') }}
 
                 </button>
 
@@ -435,7 +435,7 @@ input:-webkit-autofill:active {
 
                 <i class="fa-solid fa-arrow-left me-2"></i>
 
-                Back
+                {{ t('back') }}
 
             </a>
 

@@ -12,7 +12,7 @@
     >
 
     <title>
-        View All Users
+        {{ t('view_all_users') }}
     </title>
 
     <link
@@ -368,13 +368,13 @@
 
             <h1>
 
-                👥 All Registered Users
+                {{ t('all_registered_users') }}
 
             </h1>
 
             <p>
 
-                Monitor all user accounts from the admin control center.
+                {{ t('monitor_all_user_accounts_from_the_admin') }}
 
             </p>
 
@@ -382,7 +382,7 @@
 
         <div class="live-badge">
 
-            LIVE DATABASE ACCESS
+            {{ t('live_database_access') }}
 
         </div>
 
@@ -393,7 +393,7 @@
         <div class="stat-card">
 
             <h6>
-                Total Users
+                {{ t('total_users') }}
             </h6>
 
             <h2>
@@ -407,11 +407,11 @@
         <div class="stat-card">
 
             <h6>
-                System Status
+                {{ t('system_status_2') }}
             </h6>
 
             <h2>
-                ACTIVE
+                {{ t('active_2') }}
             </h2>
 
         </div>
@@ -419,11 +419,11 @@
         <div class="stat-card">
 
             <h6>
-                Security Layer
+                {{ t('security_layer') }}
             </h6>
 
             <h2>
-                MAX
+                {{ t('max') }}
             </h2>
 
         </div>
@@ -441,27 +441,27 @@
                     <tr>
 
                         <th>
-                            ID
+                            {{ t('id') }}
                         </th>
 
                         <th>
-                            Username
+                            {{ t('username') }}
                         </th>
 
                         <th>
-                            Email
+                            {{ t('email') }}
                         </th>
 
                         <th>
-                            Budget
+                            {{ t('budget') }}
                         </th>
 
                         <th>
-                            Income
+                            {{ t('income') }}
                         </th>
 
                         <th>
-                            Status
+                            {{ t('status') }}
                         </th>
 
                     </tr>
@@ -498,13 +498,13 @@
 
                         <td>
 
-                            ₹{{ user.budget }}
+                            {{ currency_symbol }}{{ user.budget | conv }}
 
                         </td>
 
                         <td>
 
-                            ₹{{ user.income }}
+                            {{ currency_symbol }}{{ user.income | conv }}
 
                         </td>
 
@@ -514,7 +514,7 @@
 
                                 <span class="status locked">
 
-                                    LOCKED
+                                    {{ t('locked') }}
 
                                 </span>
 
@@ -522,7 +522,7 @@
 
                                 <span class="status active">
 
-                                    ACTIVE
+                                    {{ t('active_2') }}
 
                                 </span>
 
@@ -547,7 +547,7 @@
 
             <i class="fa-solid fa-arrow-left"></i>
 
-            Back To User Management
+            {{ t('back_to_user_management') }}
 
         </a>
 

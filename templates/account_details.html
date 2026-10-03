@@ -12,7 +12,7 @@
     >
 
     <title>
-        Account Details
+        {{ t('account_details') }}
     </title>
 
     <link
@@ -358,13 +358,13 @@
 
                 <div class="page-title">
 
-                    👤 Account Details
+                    {{ t('account_details_2') }}
 
                 </div>
 
                 <div class="subtitle">
 
-                    Manage and view all your account information securely.
+                    {{ t('manage_and_view_all_your_account_informa') }}
 
                 </div>
 
@@ -383,7 +383,7 @@
                                     <td class="detail-label">
 
                                         <i class="fa-solid fa-user me-2"></i>
-                                        Username
+                                        {{ t('username') }}
 
                                     </td>
 
@@ -400,7 +400,7 @@
                                     <td class="detail-label">
 
                                         <i class="fa-solid fa-envelope me-2"></i>
-                                        Email
+                                        {{ t('email') }}
 
                                     </td>
 
@@ -417,13 +417,13 @@
                                     <td class="detail-label">
 
                                         <i class="fa-solid fa-shield-halved me-2"></i>
-                                        Role
+                                        {{ t('role') }}
 
                                     </td>
 
                                     <td class="detail-value">
 
-                                        User
+                                        {{ t('user') }}
 
                                     </td>
 
@@ -434,13 +434,13 @@
                                     <td class="detail-label">
 
                                         <i class="fa-solid fa-wallet me-2"></i>
-                                        Monthly Budget
+                                        {{ t('monthly_budget') }}
 
                                     </td>
 
                                     <td class="detail-value">
 
-                                        ₹{{ user.budget }}
+                                        {{ currency_symbol }}{{ user.budget | conv }}
 
                                     </td>
 
@@ -451,13 +451,13 @@
                                     <td class="detail-label">
 
                                         <i class="fa-solid fa-money-bill-wave me-2"></i>
-                                        Current Balance
+                                        {{ t('current_balance') }}
 
                                     </td>
 
                                     <td class="balance-text">
 
-                                        ₹{{ current_balance }}
+                                        {{ currency_symbol }}{{ current_balance | conv }}
 
                                     </td>
 
@@ -468,7 +468,7 @@
                                     <td class="detail-label">
 
                                         <i class="fa-solid fa-calendar-days me-2"></i>
-                                        Account Created
+                                        {{ t('account_created') }}
 
                                     </td>
 
@@ -504,7 +504,7 @@
 
                         <i class="fa-solid fa-clock-rotate-left"></i>
 
-                        Login History
+                        {{ t('login_history') }}
 
                     </div>
 
@@ -521,14 +521,14 @@
                                     <th>
 
                                         <i class="fa-solid fa-clock me-2"></i>
-                                        Login Time
+                                        {{ t('login_time') }}
 
                                     </th>
 
                                     <th>
 
                                         <i class="fa-solid fa-location-dot me-2"></i>
-                                        IP Address
+                                        {{ t('ip_address') }}
 
                                     </th>
 
@@ -570,7 +570,7 @@
 
                         <i class="fa-solid fa-circle-exclamation me-2"></i>
 
-                        No login history found
+                        {{ t('no_login_history_found') }}
 
                     </div>
 
@@ -589,7 +589,7 @@
 
                         <i class="fa-solid fa-arrow-left me-2"></i>
 
-                        Exit
+                        {{ t('exit') }}
 
                     </a>
 

@@ -5,7 +5,7 @@
 <head>
 
 <title>
-    Expense Statistics
+    {{ t('expense_statistics') }}
 </title>
 
 <link
@@ -485,18 +485,17 @@ input:-webkit-autofill:active {
 
             <div class="stats-badge">
 
-                ADVANCED ANALYTICS
+                {{ t('advanced_analytics') }}
 
             </div>
 
             <h1>
-                Expense Statistics
+                {{ t('expense_statistics') }}
             </h1>
 
             <p>
 
-                Track your financial performance with intelligent expense analytics,
-                detailed transaction summaries, and real-time spending insights.
+                {{ t('track_your_financial_performance_with_in') }}
 
             </p>
 
@@ -516,13 +515,13 @@ input:-webkit-autofill:active {
 
                     <div class="card-title">
 
-                        Total Expenses
+                        {{ t('total_expenses') }}
 
                     </div>
 
                     <div class="card-value">
 
-                        ₹{{ total_expense }}
+                        {{ currency_symbol }}{{ total_expense | conv }}
 
                     </div>
 
@@ -542,13 +541,13 @@ input:-webkit-autofill:active {
 
                     <div class="card-title">
 
-                        Highest Expense
+                        {{ t('highest_expense') }}
 
                     </div>
 
                     <div class="card-value">
 
-                        ₹{{ highest }}
+                        {{ currency_symbol }}{{ highest | conv }}
 
                     </div>
 
@@ -568,13 +567,13 @@ input:-webkit-autofill:active {
 
                     <div class="card-title">
 
-                        Lowest Expense
+                        {{ t('lowest_expense') }}
 
                     </div>
 
                     <div class="card-value">
 
-                        ₹{{ lowest }}
+                        {{ currency_symbol }}{{ lowest | conv }}
 
                     </div>
 
@@ -594,13 +593,13 @@ input:-webkit-autofill:active {
 
                     <div class="card-title">
 
-                        Average Expense
+                        {{ t('average_expense') }}
 
                     </div>
 
                     <div class="card-value">
 
-                        ₹{{ average }}
+                        {{ currency_symbol }}{{ average | conv }}
 
                     </div>
 
@@ -620,7 +619,7 @@ input:-webkit-autofill:active {
 
                     <div class="card-title">
 
-                        Total Categories
+                        {{ t('total_categories') }}
 
                     </div>
 
@@ -642,14 +641,13 @@ input:-webkit-autofill:active {
 
                 <i class="fa-solid fa-receipt me-2"></i>
 
-                Total Transactions
+                {{ t('total_transactions') }}
 
             </h3>
 
             <p>
 
-                Every expense entry you have recorded is tracked here for better
-                financial analysis and smart budgeting insights.
+                {{ t('every_expense_entry_you_have_recorded_is') }}
 
             </p>
 
@@ -670,7 +668,7 @@ input:-webkit-autofill:active {
 
                 <i class="fa-solid fa-arrow-left"></i>
 
-                Back to Analytics
+                {{ t('back_to_analytics') }}
 
             </a>
 

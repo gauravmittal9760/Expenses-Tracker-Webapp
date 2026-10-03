@@ -11,7 +11,7 @@
     >
 
     <title>
-        Search by Month
+        {{ t('search_by_month') }}
     </title>
 
     <link
@@ -508,13 +508,13 @@ input:-webkit-autofill:active {
 
                 <h1 class="main-title">
 
-                    Search by Month
+                    {{ t('search_by_month') }}
 
                 </h1>
 
                 <p class="sub-title">
 
-                    Explore monthly expense history and spending trends 📅💸
+                    {{ t('explore_monthly_expense_history_and_spen') }}
 
                 </p>
 
@@ -526,7 +526,7 @@ input:-webkit-autofill:active {
 
                 <label class="form-label">
 
-                    Select Month
+                    {{ t('select_month') }}
 
                 </label>
 
@@ -541,7 +541,7 @@ input:-webkit-autofill:active {
 
                     <i class="bi bi-search me-2"></i>
 
-                    Search Expenses
+                    {{ t('search_expenses') }}
 
                 </button>
 
@@ -561,7 +561,7 @@ input:-webkit-autofill:active {
 
             <i class="bi bi-bar-chart-fill"></i>
 
-            Monthly Expense Results
+            {{ t('monthly_expense_results') }}
 
         </div>
 
@@ -574,15 +574,15 @@ input:-webkit-autofill:active {
                     <tr>
 
                         <th>
-                            Category
+                            {{ t('category') }}
                         </th>
 
                         <th>
-                            Amount
+                            {{ t('amount') }}
                         </th>
 
                         <th>
-                            Date
+                            {{ t('date') }}
                         </th>
 
                     </tr>
@@ -607,7 +607,7 @@ input:-webkit-autofill:active {
 
                         <td class="amount-text">
 
-                            Rs.{{ expense.amount }}
+                            {{ currency_symbol }}{{ expense.amount | conv }}
 
                         </td>
 
@@ -645,13 +645,13 @@ input:-webkit-autofill:active {
 
             <h3>
 
-                No Expenses Found
+                {{ t('no_expenses_found') }}
 
             </h3>
 
             <p class="mt-2">
 
-                No expense records available for the selected month.
+                {{ t('no_expense_records_available_for_the_sel') }}
 
             </p>
 
@@ -670,7 +670,7 @@ input:-webkit-autofill:active {
 
         <i class="bi bi-arrow-left-circle-fill me-2"></i>
 
-        Back
+        {{ t('back') }}
 
     </a>
 

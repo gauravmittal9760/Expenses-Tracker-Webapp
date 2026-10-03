@@ -11,7 +11,7 @@
     >
 
     <title>
-        Delete Account
+        {{ t('delete_account') }}
     </title>
 
     <link
@@ -291,18 +291,17 @@ input:-webkit-autofill:active {
 
         <h1 class="page-title">
 
-            Delete Account
+            {{ t('delete_account') }}
 
         </h1>
 
         <p class="warning-text">
 
-            Your Expense Tracker account and all associated data
-            will be permanently removed from the system.
+            {{ t('your_expense_tracker_account_and_all_ass') }}
 
             <br><br>
 
-            This action is irreversible.
+            {{ t('this_action_is_irreversible') }}
 
         </p>
 
@@ -311,15 +310,15 @@ input:-webkit-autofill:active {
             <ul>
 
                 <li>
-                    All expenses will be deleted permanently
+                    {{ t('all_expenses_will_be_deleted_permanently') }}
                 </li>
 
                 <li>
-                    Exported reports & history cannot be recovered
+                    {{ t('exported_reports_history_cannot_be_recov') }}
                 </li>
 
                 <li>
-                    Account settings and profile data will be erased
+                    {{ t('account_settings_and_profile_data_will_b') }}
                 </li>
 
             </ul>
@@ -333,7 +332,7 @@ input:-webkit-autofill:active {
 
             <i class="fa-solid fa-trash"></i>
 
-            YES, DELETE MY ACCOUNT
+            {{ t('yes_delete_my_account') }}
 
         </a>
 
@@ -342,13 +341,13 @@ input:-webkit-autofill:active {
             class="btn btn-cancel mt-3"
         >
 
-            Cancel & Go Back
+            {{ t('cancel_go_back') }}
 
         </a>
 
         <div class="footer-text">
 
-            Expense Tracker Security System
+            {{ t('expense_tracker_security_system') }}
 
         </div>
 

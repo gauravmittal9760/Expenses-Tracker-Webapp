@@ -11,7 +11,7 @@
     >
 
     <title>
-        Search by Amount
+        {{ t('search_by_amount') }}
     </title>
 
     <link
@@ -471,13 +471,13 @@ input:-webkit-autofill:active {
             <h1 class="page-title">
 
                 <i class="fa-solid fa-magnifying-glass-dollar"></i>
-                Search by Amount
+                {{ t('search_by_amount') }}
 
             </h1>
 
             <p class="page-subtitle">
 
-                Quickly find all expenses matching a specific amount.
+                {{ t('quickly_find_all_expenses_matching_a_spe') }}
 
             </p>
 
@@ -494,7 +494,7 @@ input:-webkit-autofill:active {
                 <h3 class="section-heading">
 
                     <i class="fa-solid fa-wallet"></i>
-                    Enter Expense Amount
+                    {{ t('enter_expense_amount') }}
 
                 </h3>
 
@@ -519,7 +519,7 @@ input:-webkit-autofill:active {
                             <button class="btn search-btn w-100">
 
                                 <i class="fa-solid fa-search"></i>
-                                Search
+                                {{ t('search') }}
 
                             </button>
 
@@ -540,7 +540,7 @@ input:-webkit-autofill:active {
                 <h3 class="result-title">
 
                     <i class="fa-solid fa-chart-line"></i>
-                    Matching Expenses
+                    {{ t('matching_expenses') }}
 
                 </h3>
 
@@ -552,11 +552,11 @@ input:-webkit-autofill:active {
 
                             <tr>
 
-                                <th>Category</th>
+                                <th>{{ t('category') }}</th>
 
-                                <th>Amount</th>
+                                <th>{{ t('amount') }}</th>
 
-                                <th>Date</th>
+                                <th>{{ t('date') }}</th>
 
                             </tr>
 
@@ -583,7 +583,7 @@ input:-webkit-autofill:active {
                                     class="amount-box"
                                 >
 
-                                    Rs.{{ expense.amount }}
+                                    {{ currency_symbol }}{{ expense.amount | conv }}
 
                                 </td>
 
@@ -617,12 +617,12 @@ input:-webkit-autofill:active {
                 ></i>
 
                 <h4>
-                    No Matching Expense Found
+                    {{ t('no_matching_expense_found') }}
                 </h4>
 
                 <p class="mb-0">
 
-                    Try searching with another amount.
+                    {{ t('try_searching_with_another_amount') }}
 
                 </p>
 
@@ -638,7 +638,7 @@ input:-webkit-autofill:active {
             >
 
                 <i class="fa-solid fa-arrow-left"></i>
-                Back
+                {{ t('back') }}
 
             </a>
 

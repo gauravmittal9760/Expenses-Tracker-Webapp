@@ -5,7 +5,7 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='admin_fx/admin-cursor.css') }}">
     <title>
-        Admin Dashboard
+        {{ t('admin_dashboard') }}
     </title>
 
     <meta charset="UTF-8">
@@ -1286,7 +1286,7 @@ SIDEBAR
 
                 <button class="upload-btn">
 
-                    Change / Add Picture
+                    {{ t('change_add_picture') }}
 
                 </button>
 
@@ -1296,7 +1296,7 @@ SIDEBAR
 
                 <button class="remove-btn">
 
-                    Remove Picture
+                    {{ t('remove_picture') }}
 
                 </button>
 
@@ -1306,13 +1306,13 @@ SIDEBAR
 
         <div class="logo-text">
 
-            ADMIN PANEL
+            {{ t('admin_panel') }}
 
         </div>
 
         <div class="logo-sub">
 
-            Supreme Control Center ⚡
+            {{ t('supreme_control_center') }}
 
         </div>
 
@@ -1320,7 +1320,7 @@ SIDEBAR
 
     <div class="menu-title">
 
-        Management
+        {{ t('management') }}
 
     </div>
 
@@ -1331,7 +1331,7 @@ SIDEBAR
 
         <i class="fa-solid fa-users"></i>
 
-        User Management
+        {{ t('user_management') }}
 
     </a>
 
@@ -1342,7 +1342,7 @@ SIDEBAR
 
         <i class="fa-solid fa-shield-halved"></i>
 
-        Privacy & Security
+        {{ t('privacy_security') }}
 
     </a>
 
@@ -1353,7 +1353,7 @@ SIDEBAR
 
         <i class="fa-solid fa-database"></i>
 
-        Storage Management
+        {{ t('storage_management') }}
 
     </a>
 
@@ -1364,7 +1364,7 @@ SIDEBAR
 
         <i class="fa-solid fa-box-archive"></i>
 
-        Backup & Reset
+        {{ t('backup_reset') }}
 
     </a>
 
@@ -1375,7 +1375,7 @@ SIDEBAR
 
         <i class="fa-solid fa-clock-rotate-left"></i>
 
-        Account Creation & Login Records
+        {{ t('account_creation_login_records') }}
 
     </a>
 
@@ -1386,13 +1386,13 @@ SIDEBAR
 
         <i class="fa-solid fa-chart-line"></i>
 
-        Activity Center
+        {{ t('activity_center') }}
 
     </a>
 
     <div class="menu-title">
 
-        Actions
+        {{ t('actions') }}
 
     </div>
 
@@ -1403,7 +1403,7 @@ SIDEBAR
 
         <i class="fa-solid fa-house"></i>
 
-        Normal Dashboard
+        {{ t('normal_dashboard') }}
 
     </a>
 
@@ -1414,7 +1414,7 @@ SIDEBAR
 
         <i class="fa-solid fa-right-from-bracket"></i>
 
-        Admin Logout
+        {{ t('admin_logout') }}
 
     </a>
 
@@ -1432,13 +1432,13 @@ MAIN
 
             <div class="title">
 
-                Cyber Admin Dashboard ⚡
+                {{ t('cyber_admin_dashboard') }}
 
             </div>
 
             <div class="subtitle">
 
-                Real-time command center for managing your Expense Tracker ecosystem
+                {{ t('real_time_command_center_for_managing_yo') }}
 
             </div>
 
@@ -1448,7 +1448,7 @@ MAIN
 
             <div class="live-dot"></div>
 
-            System Online & Protected
+            {{ t('system_online_protected') }}
 
         </div>
 
@@ -1474,7 +1474,7 @@ MAIN
 
             <p>
 
-                Total Registered Users
+                {{ t('total_registered_users') }}
 
             </p>
 
@@ -1496,7 +1496,7 @@ MAIN
 
             <p>
 
-                Total Expenses Added
+                {{ t('total_expenses_added') }}
 
             </p>
 
@@ -1518,7 +1518,7 @@ MAIN
 
             <p>
 
-                Images Stored
+                {{ t('images_stored') }}
 
             </p>
 
@@ -1536,7 +1536,7 @@ MAIN
 
             <h3>
 
-                ⚡ Live Activity Feed
+                {{ t('live_activity_feed') }}
 
             </h3>
 
@@ -1556,13 +1556,13 @@ MAIN
 
                             <h5>
 
-                                New Accounts Created
+                                {{ t('new_accounts_created') }}
 
                             </h5>
 
                             <p>
 
-                                Real-time tracking of new user registrations
+                                {{ t('real_time_tracking_of_new_user_registrat') }}
 
                             </p>
 
@@ -1572,7 +1572,7 @@ MAIN
 
                     <div class="activity-badge">
 
-                        Active
+                        {{ t('active') }}
 
                     </div>
 
@@ -1592,13 +1592,13 @@ MAIN
 
                             <h5>
 
-                                Expense Analytics
+                                {{ t('expense_analytics') }}
 
                             </h5>
 
                             <p>
 
-                                Monitor total spending activity instantly
+                                {{ t('monitor_total_spending_activity_instantl') }}
 
                             </p>
 
@@ -1608,7 +1608,7 @@ MAIN
 
                     <div class="activity-badge">
 
-                        Monitoring
+                        {{ t('monitoring') }}
 
                     </div>
 
@@ -1628,13 +1628,13 @@ MAIN
 
                             <h5>
 
-                                Security Layer Enabled
+                                {{ t('security_layer_enabled') }}
 
                             </h5>
 
                             <p>
 
-                                Admin protection and encrypted access active
+                                {{ t('admin_protection_and_encrypted_access_ac') }}
 
                             </p>
 
@@ -1644,7 +1644,7 @@ MAIN
 
                     <div class="activity-badge">
 
-                        Secured
+                        {{ t('secured') }}
 
                     </div>
 
@@ -1664,13 +1664,13 @@ MAIN
 
                             <h5>
 
-                                Cloud Sync Status
+                                {{ t('cloud_sync_status') }}
 
                             </h5>
 
                             <p>
 
-                                Database and server communication stable
+                                {{ t('database_and_server_communication_stable') }}
 
                             </p>
 
@@ -1680,7 +1680,7 @@ MAIN
 
                     <div class="activity-badge">
 
-                        Synced
+                        {{ t('synced') }}
 
                     </div>
 
@@ -1696,7 +1696,7 @@ MAIN
 
             <h3>
 
-                🛡️ System Status
+                {{ t('system_status') }}
 
             </h3>
 
@@ -1710,7 +1710,7 @@ MAIN
 
                         <div class="status-text">
 
-                            Server Status
+                            {{ t('server_status') }}
 
                         </div>
 
@@ -1718,7 +1718,7 @@ MAIN
 
                     <div class="status-online">
 
-                        Online
+                        {{ t('online') }}
 
                     </div>
 
@@ -1732,7 +1732,7 @@ MAIN
 
                         <div class="status-text">
 
-                            Database Connection
+                            {{ t('database_connection') }}
 
                         </div>
 
@@ -1740,7 +1740,7 @@ MAIN
 
                     <div class="status-online">
 
-                        Connected
+                        {{ t('connected') }}
 
                     </div>
 
@@ -1754,7 +1754,7 @@ MAIN
 
                         <div class="status-text">
 
-                            Admin Access
+                            {{ t('admin_access') }}
 
                         </div>
 
@@ -1762,7 +1762,7 @@ MAIN
 
                     <div class="status-online">
 
-                        Verified
+                        {{ t('verified') }}
 
                     </div>
 
@@ -1776,7 +1776,7 @@ MAIN
 
                         <div class="status-text">
 
-                            Security Firewall
+                            {{ t('security_firewall') }}
 
                         </div>
 
@@ -1784,7 +1784,7 @@ MAIN
 
                     <div class="status-online">
 
-                        Protected
+                        {{ t('protected') }}
 
                     </div>
 

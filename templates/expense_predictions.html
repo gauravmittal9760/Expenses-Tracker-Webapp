@@ -11,7 +11,7 @@
     >
 
     <title>
-        Expense Predictions
+        {{ t('expense_predictions') }}
     </title>
 
 
@@ -821,15 +821,14 @@
 
             <h1>
 
-                Expense Predictions
+                {{ t('expense_predictions') }}
 
             </h1>
 
 
             <p>
 
-                Machine-learning based forecasting using your
-                historical spending patterns
+                {{ t('machine_learning_based_forecasting_using') }}
 
             </p>
 
@@ -864,14 +863,14 @@
 
                         <h5>
 
-                            Total Expenses
+                            {{ t('total_expenses') }}
 
                         </h5>
 
 
                         <h2>
 
-                            Rs.{{ total_expense }}
+                            {{ currency_symbol }}{{ total_expense | conv }}
 
                         </h2>
 
@@ -898,14 +897,14 @@
 
                         <h5>
 
-                            Average Spending
+                            {{ t('average_spending') }}
 
                         </h5>
 
 
                         <h2>
 
-                            Rs.{{ average }}
+                            {{ currency_symbol }}{{ average | conv }}
 
                         </h2>
 
@@ -932,7 +931,7 @@
 
                         <h5>
 
-                            Predicted Spending — Next 30 Days
+                            {{ t('predicted_spending_next_30_days') }}
 
                         </h5>
 
@@ -941,7 +940,7 @@
 
                             {% if prediction and prediction > 0 %}
 
-                                Rs.{{ prediction }}
+                                {{ currency_symbol }}{{ prediction | conv }}
 
                             {% else %}
 
@@ -968,8 +967,8 @@
 
                 <div class="ai-message">
                     <div>
-                        ML successfully generated a 30-day spending forecast of
-                        <strong>Rs.{{ prediction }}</strong> using your historical expense data.
+                        {{ t('ml_successfully_generated_a_30_day_spend') }}
+                        <strong>{{ currency_symbol }}{{ prediction | conv }}</strong> {{ t('using_your_historical_expense_data') }}
                     </div>
                 </div>
 
@@ -985,7 +984,7 @@
 
                 <div class="ai-message">
                     <div>
-                        More historical expense data is required to generate a reliable ML forecast.
+                        {{ t('more_historical_expense_data_is_required') }}
                     </div>
                 </div>
 
@@ -1013,15 +1012,14 @@
 
                         <div class="trend-title">
 
-                            Spending Trend
+                            {{ t('spending_trend') }}
 
                         </div>
 
 
                         <div class="trend-subtitle">
 
-                            Machine-learning analysis of your
-                            expense behaviour
+                            {{ t('machine_learning_analysis_of_your_expens') }}
 
                         </div>
 
@@ -1045,7 +1043,7 @@
 
                     <span class="ml-status-dot"></span>
 
-                    ML Forecast Successfully Generated
+                    {{ t('ml_forecast_successfully_generated') }}
 
                 </div>
 
@@ -1055,7 +1053,7 @@
 
                     <span class="ml-status-dot"></span>
 
-                    More historical data is required for ML forecasting
+                    {{ t('more_historical_data_is_required_for_ml_') }}
 
                 </div>
 
@@ -1077,7 +1075,7 @@
 
                 <i class="bi bi-arrow-left-circle-fill"></i>
 
-                Back To Analytics
+                {{ t('back_to_analytics_2') }}
 
             </a>
 

@@ -12,7 +12,7 @@
     >
 
     <title>
-        Dashboard
+        {{ t('dashboard') }}
     </title>
 
     <link
@@ -883,7 +883,7 @@
 
             <div class="brand-title text-center mt-4 mb-4">
 
-                Expense Tracker 💰
+                {{ t('expense_tracker') }}
 
             </div>
 
@@ -892,7 +892,7 @@
                 class="btn sidebar-btn"
             >
                 <i class="fa-solid fa-magnifying-glass me-2"></i>
-                Search Expenses
+                {{ t('search_expenses') }}
             </a>
 
             <a
@@ -900,7 +900,7 @@
                 class="btn sidebar-btn"
             >
                 <i class="fa-solid fa-screwdriver-wrench me-2"></i>
-                Expense Management
+                {{ t('expense_management') }}
             </a>
 
             <a
@@ -908,7 +908,7 @@
                 class="btn sidebar-btn"
             >
                 <i class="fa-solid fa-chart-pie me-2"></i>
-                View & Analyze Expenses
+                {{ t('view_analyze_expenses') }}
             </a>
 
             <a
@@ -916,7 +916,7 @@
                 class="btn sidebar-btn"
             >
                 <i class="fa-solid fa-wallet me-2"></i>
-                Money & Budget
+                {{ t('money_budget') }}
             </a>
 
             <a
@@ -924,7 +924,7 @@
                 class="btn sidebar-btn"
             >
                 <i class="fa-solid fa-file-export me-2"></i>
-                Export Center
+                {{ t('export_center') }}
             </a>
 
             <a
@@ -932,7 +932,7 @@
                 class="btn sidebar-btn"
             >
                 <i class="fa-solid fa-user me-2"></i>
-                Account Details
+                {{ t('account_details') }}
             </a>
 
             <a
@@ -940,7 +940,7 @@
                 class="btn sidebar-btn"
             >
                 <i class="fa-solid fa-gear me-2"></i>
-                Settings & Storage
+                {{ t('settings_storage') }}
             </a>
 
             <a
@@ -950,7 +950,7 @@
 
                 <i class="fa-solid fa-bell me-2"></i>
 
-                Notifications
+                {{ t('notifications') }}
 
             </a>
 
@@ -959,7 +959,7 @@
                 class="btn btn-danger w-100 mt-3 logout-btn"
             >
                 <i class="fa-solid fa-right-from-bracket me-2"></i>
-                Logout
+                {{ t('logout') }}
             </button>
 
         </div>
@@ -980,7 +980,7 @@
 
                 <div class="mt-3 text-light opacity-75 fs-5">
 
-                    Track your expenses, manage budgets and analyze spending like a pro.
+                    {{ t('track_your_expenses_manage_budgets_and_a') }}
 
                 </div>
 
@@ -995,11 +995,11 @@
                     <div class="stats-card card-blue">
 
                         <h4>
-                            Current Balance
+                            {{ t('current_balance') }}
                         </h4>
 
                         <h2>
-                            ₹{{ balance }}
+                            {{ currency_symbol }}{{ balance | conv }}
                         </h2>
 
                         <i class="fa-solid fa-wallet"></i>
@@ -1013,11 +1013,11 @@
                     <div class="stats-card card-yellow">
 
                         <h4>
-                            Remaining Budget
+                            {{ t('remaining_budget') }}
                         </h4>
 
                         <h2>
-                            ₹{{ budget }}
+                            {{ currency_symbol }}{{ budget | conv }}
                         </h2>
 
                         <i class="fa-solid fa-coins"></i>
@@ -1031,11 +1031,11 @@
                     <div class="stats-card card-red">
 
                         <h4>
-                            Total Expenses
+                            {{ t('total_expenses') }}
                         </h4>
 
                         <h2>
-                            ₹{{ total_expense }}
+                            {{ currency_symbol }}{{ total_expense | conv }}
                         </h2>
 
                         <i class="fa-solid fa-chart-line"></i>
@@ -1052,7 +1052,7 @@
 
                 <div class="recent-title">
 
-                    Recent Expenses 📋
+                    {{ t('recent_expenses') }}
 
                 </div>
 
@@ -1065,15 +1065,15 @@
                             <tr>
 
                                 <th>
-                                    Category
+                                    {{ t('category') }}
                                 </th>
 
                                 <th>
-                                    Amount
+                                    {{ t('amount') }}
                                 </th>
 
                                 <th>
-                                    Date
+                                    {{ t('date') }}
                                 </th>
 
                             </tr>
@@ -1091,7 +1091,7 @@
                                 </td>
 
                                 <td>
-                                    ₹{{ expense.amount }}
+                                    {{ currency_symbol }}{{ expense.amount | conv }}
                                 </td>
 
                                 <td>
@@ -1132,7 +1132,7 @@
 
                 <h5 class="modal-title">
 
-                    👤 Profile Picture
+                    {{ t('profile_picture') }}
 
                 </h5>
 
@@ -1178,7 +1178,7 @@
                         type="submit"
                         class="btn btn-success btn-custom w-100"
                     >
-                        Change / Add Profile Picture
+                        {{ t('change_add_profile_picture') }}
                     </button>
 
                 </form>
@@ -1187,7 +1187,7 @@
                     href="/delete_profile_pic"
                     class="btn btn-danger btn-custom w-100 mt-3"
                 >
-                    Remove Profile Picture
+                    {{ t('remove_profile_picture') }}
                 </a>
 
             </div>

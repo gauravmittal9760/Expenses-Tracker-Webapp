@@ -11,7 +11,7 @@
     >
 
     <title>
-        Total Spending
+        {{ t('total_spending') }}
     </title>
 
     <link
@@ -414,13 +414,13 @@
 
         <h1 class="main-title">
 
-            Total Spending
+            {{ t('total_spending') }}
 
         </h1>
 
         <p class="sub-text">
 
-            Track your complete expense activity and spending overview.
+            {{ t('track_your_complete_expense_activity_and') }}
         </p>
 
         <!-- AMOUNT -->
@@ -429,13 +429,13 @@
 
             <div class="amount-label">
 
-                Overall Expenses
+                {{ t('overall_expenses') }}
 
             </div>
 
             <div class="amount-value">
 
-                ₹ {{ total }}
+                {{ currency_symbol }} {{ total | conv }}
 
             </div>
 
@@ -450,7 +450,7 @@
                 <i class="fa-solid fa-chart-line"></i>
 
                 <p>
-                    Spending Analytics
+                    {{ t('spending_analytics') }}
                 </p>
 
             </div>
@@ -460,7 +460,7 @@
                 <i class="fa-solid fa-coins"></i>
 
                 <p>
-                    Expense Tracking
+                    {{ t('expense_tracking') }}
                 </p>
 
             </div>
@@ -470,7 +470,7 @@
                 <i class="fa-solid fa-bolt"></i>
 
                 <p>
-                    Real-Time Overview
+                    {{ t('real_time_overview') }}
                 </p>
 
             </div>
@@ -486,7 +486,7 @@
 
             <i class="fa-solid fa-arrow-left"></i>
 
-            Back
+            {{ t('back') }}
 
         </a>
 

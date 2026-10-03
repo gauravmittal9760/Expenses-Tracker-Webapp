@@ -11,7 +11,7 @@
     >
 
     <title>
-        Edit Expense
+        {{ t('edit_expense') }}
     </title>
 
     <link
@@ -290,11 +290,11 @@
                     </div>
 
                     <h1>
-                        Edit Expense
+                        {{ t('edit_expense') }}
                     </h1>
 
                     <p>
-                        Update your expense details instantly
+                        {{ t('update_your_expense_details_instantly') }}
                     </p>
 
                 </div>
@@ -308,7 +308,7 @@
 
                         <label class="input-label">
 
-                            Expense Category
+                            {{ t('expense_category') }}
 
                         </label>
 
@@ -328,7 +328,7 @@
 
                         <label class="input-label">
 
-                            Expense Description
+                            {{ t('expense_description') }}
 
                         </label>
 
@@ -345,19 +345,19 @@
 
                         <label class="input-label">
 
-                            Expense Amount
+                            {{ t('expense_amount') }}
 
                         </label>
 
                         <div class="input-group-custom">
 
-                            <i class="bi bi-currency-rupee input-icon"></i>
+                            <span class="input-icon">{{ currency_symbol }}</span>
 
                             <input
                                 type="number"
                                 name="amount"
                                 class="form-control custom-input"
-                                value="{{ expense.amount }}"
+                                value="{{ expense.amount | conv }}"
                                 required
                             >
 
@@ -365,7 +365,7 @@
 
                         <label class="input-label">
 
-                            Expense Date
+                            {{ t('expense_date') }}
 
                         </label>
 
@@ -399,7 +399,7 @@
 
                             <label class="input-label mb-4">
 
-                                Current Images
+                                {{ t('current_images') }}
 
                             </label>
 
@@ -428,7 +428,7 @@
 
                                             <label class="form-check-label">
 
-                                                Remove Image
+                                                {{ t('remove_image') }}
 
                                             </label>
 
@@ -450,7 +450,7 @@
 
                         <label class="input-label">
 
-                            Upload More Images
+                            {{ t('upload_more_images') }}
 
                         </label>
 
@@ -470,7 +470,7 @@
 
                             <i class="bi bi-check-circle-fill"></i>
 
-                            Update Expense
+                            {{ t('update_expense') }}
 
                         </button>
 

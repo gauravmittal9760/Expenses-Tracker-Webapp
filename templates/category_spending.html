@@ -4,7 +4,7 @@
 <head>
 
     <title>
-        Category Wise Spending
+        {{ t('category_wise_spending') }}
     </title>
 
     <link
@@ -329,13 +329,13 @@ input:-webkit-autofill:active {
 
                 <i class="fa-solid fa-chart-pie me-2"></i>
 
-                Category Wise Spending
+                {{ t('category_wise_spending') }}
 
             </h1>
 
             <p class="page-subtitle mt-3">
 
-                Analyze where your money is being spent across different categories.
+                {{ t('analyze_where_your_money_is_being_spent_') }}
 
             </p>
 
@@ -353,7 +353,7 @@ input:-webkit-autofill:active {
 
                         <i class="fa-solid fa-layer-group me-2"></i>
 
-                        Total Categories
+                        {{ t('total_categories') }}
 
                     </div>
 
@@ -375,13 +375,13 @@ input:-webkit-autofill:active {
 
                         <i class="fa-solid fa-wallet me-2"></i>
 
-                        Total Spending
+                        {{ t('total_spending') }}
 
                     </div>
 
                     <div class="summary-value">
 
-                        ₹{{ category_totals.values()|sum }}
+                        {{ currency_symbol }}{{ category_totals.values()|sum | conv }}
 
                     </div>
 
@@ -402,15 +402,15 @@ input:-webkit-autofill:active {
                     <tr>
 
                         <th width="10%">
-                            Rank
+                            {{ t('rank') }}
                         </th>
 
                         <th>
-                            Category
+                            {{ t('category') }}
                         </th>
 
                         <th>
-                            Total Spending
+                            {{ t('total_spending') }}
                         </th>
 
                     </tr>
@@ -447,7 +447,7 @@ input:-webkit-autofill:active {
 
                             <span class="amount-text">
 
-                                ₹{{ amount }}
+                                {{ currency_symbol }}{{ amount | conv }}
 
                             </span>
 
@@ -474,7 +474,7 @@ input:-webkit-autofill:active {
 
                 <i class="fa-solid fa-arrow-left me-2"></i>
 
-                Back
+                {{ t('back') }}
 
             </a>
 

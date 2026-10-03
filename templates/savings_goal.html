@@ -11,7 +11,7 @@
     >
 
     <title>
-        Savings Goal Tracker
+        {{ t('savings_goal_tracker') }}
     </title>
 
     <link
@@ -379,14 +379,13 @@ input:-webkit-autofill:active {
 
         <h1 class="page-title">
 
-            Savings Goal Tracker 🎯
+            {{ t('savings_goal_tracker_2') }}
 
         </h1>
 
         <p class="page-subtitle">
 
-            Track your dreams, monitor progress &
-            stay motivated daily.
+            {{ t('track_your_dreams_monitor_progress_stay_') }}
 
         </p>
 
@@ -442,7 +441,7 @@ input:-webkit-autofill:active {
 
                 <i class="fa-solid fa-piggy-bank me-2"></i>
 
-                Save Goal
+                {{ t('save_goal') }}
 
             </button>
 
@@ -480,17 +479,17 @@ input:-webkit-autofill:active {
 
                         <p class="goal-info">
 
-                            <strong>Goal Amount :</strong>
+                            <strong>{{ t('goal_amount_2') }}</strong>
 
-                            Rs.{{ goal.goal_amount }}
+                            {{ currency_symbol }}{{ goal.goal_amount | conv }}
 
                         </p>
 
                         <p class="goal-info">
 
-                            <strong>Saved :</strong>
+                            <strong>{{ t('saved') }}</strong>
 
-                            Rs.{{ goal.saved_amount }}
+                            {{ currency_symbol }}{{ goal.saved_amount | conv }}
 
                         </p>
 
@@ -516,7 +515,7 @@ input:-webkit-autofill:active {
 
                                 <i class="fa-solid fa-pen-to-square me-2"></i>
 
-                                Edit Goal
+                                {{ t('edit_goal') }}
 
                             </a>
 
@@ -527,7 +526,7 @@ input:-webkit-autofill:active {
 
                                 <i class="fa-solid fa-trash me-2"></i>
 
-                                Delete Goal
+                                {{ t('delete_goal') }}
 
                             </a>
 
@@ -552,7 +551,7 @@ input:-webkit-autofill:active {
 
             <i class="fa-solid fa-arrow-left me-2"></i>
 
-            Back
+            {{ t('back') }}
 
         </a>
 

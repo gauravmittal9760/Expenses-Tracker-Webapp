@@ -11,7 +11,7 @@
     >
 
     <title>
-        Search By Date
+        {{ t('search_by_date') }}
     </title>
 
     <link
@@ -395,13 +395,13 @@ input:-webkit-autofill:active {
 
         <h1 class="main-title">
 
-            Search By Date
+            {{ t('search_by_date') }}
 
         </h1>
 
         <p class="subtitle">
 
-            Find all expenses from a specific day instantly 📅
+            {{ t('find_all_expenses_from_a_specific_day_in') }}
 
         </p>
 
@@ -426,7 +426,7 @@ input:-webkit-autofill:active {
 
                         <i class="bi bi-search me-2"></i>
 
-                        Search
+                        {{ t('search') }}
 
                     </button>
 
@@ -450,7 +450,7 @@ input:-webkit-autofill:active {
 
                 <i class="bi bi-receipt-cutoff me-2 text-info"></i>
 
-                Expense Results
+                {{ t('expense_results') }}
 
             </h2>
 
@@ -471,15 +471,15 @@ input:-webkit-autofill:active {
                     <tr>
 
                         <th>
-                            Category
+                            {{ t('category') }}
                         </th>
 
                         <th>
-                            Amount
+                            {{ t('amount') }}
                         </th>
 
                         <th>
-                            Date
+                            {{ t('date') }}
                         </th>
 
                     </tr>
@@ -506,7 +506,7 @@ input:-webkit-autofill:active {
 
                             <span class="amount-text">
 
-                                ₹{{ expense.amount }}
+                                {{ currency_symbol }}{{ expense.amount | conv }}
 
                             </span>
 
@@ -544,13 +544,13 @@ input:-webkit-autofill:active {
 
         <h3>
 
-            No Expenses Found
+            {{ t('no_expenses_found') }}
 
         </h3>
 
         <p class="mt-2">
 
-            No expense records are available for the selected date.
+            {{ t('no_expense_records_are_available_for_the') }}
 
         </p>
 

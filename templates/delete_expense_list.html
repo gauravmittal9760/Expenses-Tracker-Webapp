@@ -11,7 +11,7 @@
     >
 
     <title>
-        Delete Expense
+        {{ t('delete_expense') }}
     </title>
 
     <link
@@ -318,7 +318,7 @@ input:-webkit-autofill:active {
 
             <i class="fa-solid fa-trash-can"></i>
 
-            Delete Expenses
+            {{ t('delete_expenses') }}
 
         </h1>
 
@@ -333,19 +333,19 @@ input:-webkit-autofill:active {
                     <tr>
 
                         <th>
-                            Category
+                            {{ t('category') }}
                         </th>
 
                         <th>
-                            Amount
+                            {{ t('amount') }}
                         </th>
 
                         <th>
-                            Date
+                            {{ t('date') }}
                         </th>
 
                         <th class="text-center">
-                            Action
+                            {{ t('action') }}
                         </th>
 
                     </tr>
@@ -366,7 +366,7 @@ input:-webkit-autofill:active {
 
                         <td class="expense-amount">
 
-                            ₹{{ expense.amount }}
+                            {{ currency_symbol }}{{ expense.amount | conv }}
 
                         </td>
 
@@ -385,7 +385,7 @@ input:-webkit-autofill:active {
 
                                 <i class="fa-solid fa-trash"></i>
 
-                                Delete
+                                {{ t('delete') }}
 
                             </button>
 
@@ -408,11 +408,11 @@ input:-webkit-autofill:active {
             <i class="fa-solid fa-folder-open"></i>
 
             <h4>
-                No Expenses Found
+                {{ t('no_expenses_found') }}
             </h4>
 
             <p class="text-light mt-2 mb-0">
-                There are currently no expenses available to delete.
+                {{ t('there_are_currently_no_expenses_availabl') }}
             </p>
 
         </div>
@@ -426,7 +426,7 @@ input:-webkit-autofill:active {
 
             <i class="fa-solid fa-arrow-left"></i>
 
-            Back
+            {{ t('back') }}
 
         </a>
 

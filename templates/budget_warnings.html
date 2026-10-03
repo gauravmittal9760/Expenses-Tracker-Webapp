@@ -11,7 +11,7 @@
     >
 
     <title>
-        Budget Warnings
+        {{ t('budget_warnings') }}
     </title>
 
     <link
@@ -288,13 +288,13 @@
 
         <h1 class="main-title">
 
-            Budget Warnings ⚠️
+            {{ t('budget_warnings_2') }}
 
         </h1>
 
         <p class="subtitle">
 
-            Analyze your financial health and monitor spending limits smartly
+            {{ t('analyze_your_financial_health_and_monito') }}
 
         </p>
 
@@ -318,13 +318,13 @@
 
                 <div class="stat-title">
 
-                    Monthly Budget
+                    {{ t('monthly_budget') }}
 
                 </div>
 
                 <div class="stat-value">
 
-                    ₹{{ budget }}
+                    {{ currency_symbol }}{{ budget | conv }}
 
                 </div>
 
@@ -346,13 +346,13 @@
 
                 <div class="stat-title">
 
-                    Total Expenses
+                    {{ t('total_expenses') }}
 
                 </div>
 
                 <div class="stat-value">
 
-                    ₹{{ total_expense }}
+                    {{ currency_symbol }}{{ total_expense | conv }}
 
                 </div>
 
@@ -374,13 +374,13 @@
 
                 <div class="stat-title">
 
-                    Remaining Balance
+                    {{ t('remaining_balance') }}
 
                 </div>
 
                 <div class="stat-value">
 
-                    ₹{{ remaining }}
+                    {{ currency_symbol }}{{ remaining | conv }}
 
                 </div>
 
@@ -425,7 +425,7 @@
 
             <i class="fa-solid fa-arrow-left me-2"></i>
 
-            Back to Analytics
+            {{ t('back_to_analytics') }}
 
         </a>
 
@@ -433,7 +433,7 @@
 
     <div class="footer-note">
 
-        Smart budgeting helps maintain long-term financial stability 📈
+        {{ t('smart_budgeting_helps_maintain_long_term') }}
 
     </div>
 

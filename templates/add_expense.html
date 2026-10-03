@@ -12,7 +12,7 @@
     >
 
     <title>
-        Add Expense
+        {{ t('add_expense') }}
     </title>
 
     <link
@@ -368,13 +368,13 @@
 
                 <h2 class="expense-title">
 
-                    Add Expense 💸
+                    {{ t('add_expense_2') }}
 
                 </h2>
 
                 <div class="subtitle">
 
-                    Track every spending smartly and manage your finances like a pro.
+                    {{ t('track_every_spending_smartly_and_manage_') }}
 
                 </div>
 
@@ -391,7 +391,7 @@
 
                         <label class="input-label">
 
-                            Expense Category
+                            {{ t('expense_category') }}
 
                         </label>
 
@@ -417,7 +417,7 @@
 
                         <label class="input-label">
 
-                            Description
+                            {{ t('description') }}
 
                         </label>
 
@@ -442,13 +442,13 @@
 
                         <label class="input-label">
 
-                            Amount
+                            {{ t('amount') }}
 
                         </label>
 
                         <div class="input-group-icon">
 
-                            <i class="fa-solid fa-indian-rupee-sign"></i>
+                            <span class="currency-icon">{{ currency_symbol }}</span>
 
                             <input
                                 type="number"
@@ -468,7 +468,7 @@
 
                         <label class="input-label">
 
-                            Expense Date
+                            {{ t('expense_date') }}
 
                         </label>
 
@@ -495,7 +495,7 @@
 
                             <i class="fa-solid fa-images me-2"></i>
 
-                            Upload Expense Image
+                            {{ t('upload_expense_image') }}
 
                         </label>
 
@@ -509,7 +509,7 @@
 
                         <div class="upload-text mt-3">
 
-                            Add bill screenshots, receipts or payment proof (optional).
+                            {{ t('add_bill_screenshots_receipts_or_payment') }}
 
                         </div>
 
@@ -521,7 +521,7 @@
 
                         <i class="fa-solid fa-plus me-2"></i>
 
-                        Add Expense
+                        {{ t('add_expense') }}
 
                     </button>
 

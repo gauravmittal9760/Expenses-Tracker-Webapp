@@ -14,7 +14,7 @@ content="width=device-width, initial-scale=1.0"
 >
 
 <title>
-    Supreme User Management
+    {{ t('supreme_user_management') }}
 </title>
 
 <link
@@ -839,18 +839,18 @@ MOBILE
 <div class="title-box">
 
     <h1>
-        👑 Supreme User Control
+        {{ t('supreme_user_control') }}
     </h1>
 
     <p>
-        Advanced user management, monitoring & cyber admin controls
+        {{ t('advanced_user_management_monitoring_cybe') }}
     </p>
 
 </div>
 
 <div class="live-badge">
 
-    ⚡ LIVE ADMIN ACCESS
+    {{ t('live_admin_access') }}
 
 </div>
 
@@ -880,7 +880,7 @@ MOBILE
 
         <div class="stat-label">
 
-            Registered Accounts
+            {{ t('registered_accounts') }}
 
         </div>
 
@@ -898,13 +898,13 @@ MOBILE
 
         <div class="stat-number">
 
-            ₹{{ users|sum(attribute='budget')|int }}
+            {{ currency_symbol }}{{ (users|sum(attribute='budget')) | conv }}
 
         </div>
 
         <div class="stat-label">
 
-            Total Monthly Budgets
+            {{ t('total_monthly_budgets') }}
 
         </div>
 
@@ -920,13 +920,13 @@ MOBILE
 
         <div class="stat-number">
 
-            ₹{{ users|sum(attribute='income')|int }}
+            {{ currency_symbol }}{{ (users|sum(attribute='income')) | conv }}
 
         </div>
 
         <div class="stat-label">
 
-            Total User Balance
+            {{ t('total_user_balance') }}
 
         </div>
 
@@ -976,13 +976,13 @@ MOBILE
 
                 <span class="info-label">
 
-                    Monthly Budget
+                    {{ t('monthly_budget') }}
 
                 </span>
 
                 <span class="info-value">
 
-                    ₹ {{ user.budget }}
+                    {{ currency_symbol }} {{ user.budget | conv }}
 
                 </span>
 
@@ -992,13 +992,13 @@ MOBILE
 
                 <span class="info-label">
 
-                    Current Balance
+                    {{ t('current_balance') }}
 
                 </span>
 
                 <span class="info-value">
 
-                    ₹ {{ user.income }}
+                    {{ currency_symbol }} {{ user.income | conv }}
 
                 </span>
 
@@ -1008,7 +1008,7 @@ MOBILE
 
                 <span class="info-label">
 
-                    Account Type
+                    {{ t('account_type') }}
 
                 </span>
 
@@ -1035,7 +1035,7 @@ MOBILE
 
                 <i class="fa-solid fa-chart-line"></i>
 
-                View Expenses
+                {{ t('view_expenses') }}
 
             </a>
 
@@ -1051,7 +1051,7 @@ MOBILE
 
                 <i class="fa-solid fa-trash"></i>
 
-                Delete User
+                {{ t('delete_user') }}
 
             </a>
 
@@ -1072,11 +1072,11 @@ MOBILE
     <i class="fa-solid fa-user-xmark"></i>
 
     <h2>
-        No Users Found
+        {{ t('no_users_found') }}
     </h2>
 
     <p>
-        No registered accounts available right now.
+        {{ t('no_registered_accounts_available_right_n') }}
     </p>
 
 </div>
@@ -1092,7 +1092,7 @@ MOBILE
 
     <i class="fa-solid fa-arrow-left"></i>
 
-    Back To Dashboard
+    {{ t('back_to_dashboard') }}
 
 </a>
 

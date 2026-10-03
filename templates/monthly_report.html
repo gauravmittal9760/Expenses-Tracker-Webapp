@@ -11,7 +11,7 @@
     >
 
     <title>
-        Monthly Report
+        {{ t('monthly_report') }}
     </title>
 
     <link
@@ -434,13 +434,13 @@ input:-webkit-autofill:active {
             <h1 class="report-title">
 
                 <i class="fa-solid fa-chart-line"></i>
-                Monthly Expense Report
+                {{ t('monthly_expense_report') }}
 
             </h1>
 
             <p class="report-subtitle">
 
-                Detailed monthly spending overview with smart financial tracking insights
+                {{ t('detailed_monthly_spending_overview_with_') }}
 
             </p>
 
@@ -455,15 +455,15 @@ input:-webkit-autofill:active {
                         <tr>
 
                             <th>
-                                Category
+                                {{ t('category') }}
                             </th>
 
                             <th>
-                                Amount
+                                {{ t('amount') }}
                             </th>
 
                             <th>
-                                Date
+                                {{ t('date') }}
                             </th>
 
                         </tr>
@@ -494,7 +494,7 @@ input:-webkit-autofill:active {
 
                                     <span class="amount-text">
 
-                                        ₹{{ expense.amount }}
+                                        {{ currency_symbol }}{{ expense.amount | conv }}
 
                                     </span>
 
@@ -527,12 +527,12 @@ input:-webkit-autofill:active {
                                         <i class="fa-solid fa-folder-open"></i>
 
                                         <h4>
-                                            No Monthly Expenses Found
+                                            {{ t('no_monthly_expenses_found') }}
                                         </h4>
 
                                         <p class="mt-2">
 
-                                            Your monthly expense records will appear here.
+                                            {{ t('your_monthly_expense_records_will_appear') }}
 
                                         </p>
 
@@ -558,13 +558,13 @@ input:-webkit-autofill:active {
 
                     <i class="fa-solid fa-coins"></i>
 
-                    Total Monthly Expense
+                    {{ t('total_monthly_expense') }}
 
                 </h3>
 
                 <div class="summary-amount">
 
-                    ₹{{ total_monthly }}
+                    {{ currency_symbol }}{{ total_monthly | conv }}
 
                 </div>
 
@@ -581,7 +581,7 @@ input:-webkit-autofill:active {
 
                     <i class="fa-solid fa-arrow-left"></i>
 
-                    Back
+                    {{ t('back') }}
 
                 </a>
 

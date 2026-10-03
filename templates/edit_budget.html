@@ -11,7 +11,7 @@
     >
 
     <title>
-        Edit Budget
+        {{ t('edit_budget') }}
     </title>
 
     <link
@@ -384,13 +384,13 @@ input:-webkit-autofill:active {
 
         <h1 class="page-title">
 
-            Edit Monthly Budget
+            {{ t('edit_monthly_budget') }}
 
         </h1>
 
         <p class="page-subtitle">
 
-            Update your monthly spending limit to manage expenses smarter and maintain better financial discipline.
+            {{ t('update_your_monthly_spending_limit_to_ma') }}
 
         </p>
 
@@ -402,7 +402,7 @@ input:-webkit-autofill:active {
 
                 <label class="form-label">
 
-                    Monthly Budget
+                    {{ t('monthly_budget') }}
 
                 </label>
 
@@ -410,7 +410,7 @@ input:-webkit-autofill:active {
 
                     <span class="currency-icon">
 
-                        <i class="fa-solid fa-indian-rupee-sign"></i>
+                        <span class="currency-icon">{{ currency_symbol }}</span>
 
                     </span>
 
@@ -435,7 +435,7 @@ input:-webkit-autofill:active {
 
                 <i class="fa-solid fa-floppy-disk me-2"></i>
 
-                Save Budget
+                {{ t('save_budget') }}
 
             </button>
 
@@ -445,7 +445,7 @@ input:-webkit-autofill:active {
 
         <div class="info-box">
 
-            💡 Setting a proper monthly budget helps you track overspending and gives smarter expense insights throughout the app.
+            {{ t('setting_a_proper_monthly_budget_helps_yo') }}
 
         </div>
 
@@ -458,7 +458,7 @@ input:-webkit-autofill:active {
 
             <i class="fa-solid fa-arrow-left me-2"></i>
 
-            Back
+            {{ t('back') }}
 
         </a>
 
