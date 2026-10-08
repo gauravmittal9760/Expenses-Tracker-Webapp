@@ -121,16 +121,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 # =========================================================
 # NO-STALE-PAGE FIX
 # =========================================================
-# The DB already stores/returns everything in IST (see the connect
-# listener above). The "shows time from 5.5 hours ago until I refresh
-# or reopen the app" symptom is a BROWSER caching issue, not a backend
-# one: mobile browsers (and desktop back/forward navigation) keep a
-# snapshot of the page in memory (bfcache) and show that snapshot
-# instead of asking the server for anything new. Telling every
-# dynamic response to never be cached forces a fresh page — with a
-# fresh, correct time — on every open, exactly like a manual refresh
-# does today. Static files (css/js/uploaded assets) are left alone so
-# they still load fast.
+
 @app.after_request
 def add_no_cache_headers(response):
     if not request.path.startswith("/static/"):
@@ -212,12 +203,7 @@ def allowed_file(filename):
 # =========================================================
 # CURRENCY
 # =========================================================
-# Symbol + display-code for every currency the "Change Currency" page
-# offers. Only the symbol/label changes here — amounts already stored
-# in the database are NOT converted with exchange rates (there's no
-# FX-rate API in this project), so switching currency changes how
-# numbers are *labelled* everywhere, not their underlying value. This
-# matches how most personal finance apps handle a "display currency".
+
 CURRENCY_SYMBOLS = {
     "INR": "₹",
     "USD": "$",
@@ -231,6 +217,23 @@ CURRENCY_SYMBOLS = {
     "CNY": "¥",
     "CHF": "Fr",
     "SAR": "SAR",
+    "RUB": "₽",
+    "TRY": "₺",
+    "KRW": "₩",
+    "BRL": "R$",
+    "MXN": "Mex$",
+    "ZAR": "R",
+    "THB": "฿",
+    "IDR": "Rp",
+    "MYR": "RM",
+    "PHP": "₱",
+    "VND": "₫",
+    "NZD": "NZ$",
+    "PKR": "Rs",
+    "BDT": "৳",
+    "EGP": "E£",
+    "SEK": "kr",
+    "PLN": "zł",
 }
 
 CURRENCY_NAMES = {
@@ -246,34 +249,29 @@ CURRENCY_NAMES = {
     "CNY": "Chinese Yuan",
     "CHF": "Swiss Franc",
     "SAR": "Saudi Riyal",
+    "RUB": "Russian Ruble",
+    "TRY": "Turkish Lira",
+    "KRW": "South Korean Won",
+    "BRL": "Brazilian Real",
+    "MXN": "Mexican Peso",
+    "ZAR": "South African Rand",
+    "THB": "Thai Baht",
+    "IDR": "Indonesian Rupiah",
+    "MYR": "Malaysian Ringgit",
+    "PHP": "Philippine Peso",
+    "VND": "Vietnamese Dong",
+    "NZD": "New Zealand Dollar",
+    "PKR": "Pakistani Rupee",
+    "BDT": "Bangladeshi Taka",
+    "EGP": "Egyptian Pound",
+    "SEK": "Swedish Krona",
+    "PLN": "Polish Zloty",
 }
 
 
 # =========================================================
 # REAL CURRENCY CONVERSION
 # =========================================================
-# Every amount in this app (Expense.amount, Budget.balance,
-# Budget.monthly_budget, User.income, SavingsGoal amounts) is always
-# STORED in the DB in one fixed base currency: INR. That never
-# changes, no matter what the user has selected to look at.
-#
-# What changes is:
-#   - DISPLAY: every amount shown in a template/PDF/CSV/Excel is
-#     converted from INR into the user's selected currency using a
-#     live exchange rate (convert_from_base).
-#   - INPUT: whenever the user types a new amount (a new expense,
-#     budget, income, goal), that number is treated as being written
-#     in their currently selected currency, and converted back into
-#     INR before it's saved (convert_to_base).
-#
-# This is what makes "select USD -> everything is in USD, budget,
-# income, goal, expenses, all of it" actually work, instead of just
-# swapping a symbol.
-#
-# Rates come from a free, no-API-key exchange rate service and are
-# cached in memory for a few hours so the app isn't making a network
-# call on every single page load (and still works fine if that
-# service is briefly down, via the fallback table below).
 
 BASE_CURRENCY = "INR"
 
@@ -284,11 +282,7 @@ _exchange_rate_cache = {
     "fetched_at": 0,
 }
 
-# Rough, manually-set rates (units of that currency per 1 INR), used
-# ONLY if the live exchange-rate service can't be reached. These will
-# drift out of date over time — they exist purely so the app keeps
-# working (rather than crashing or showing nothing) if there's no
-# network access to the rate service for a moment.
+
 FALLBACK_RATES_FROM_INR = {
     "INR": 1.0,
     "USD": 0.012,
@@ -302,6 +296,23 @@ FALLBACK_RATES_FROM_INR = {
     "CNY": 0.086,
     "CHF": 0.0105,
     "SAR": 0.045,
+    "RUB": 0.95,
+    "TRY": 0.46,
+    "KRW": 16.0,
+    "BRL": 0.063,
+    "MXN": 0.22,
+    "ZAR": 0.21,
+    "THB": 0.38,
+    "IDR": 185.0,
+    "MYR": 0.049,
+    "PHP": 0.65,
+    "VND": 290.0,
+    "NZD": 0.019,
+    "PKR": 3.2,
+    "BDT": 1.37,
+    "EGP": 0.57,
+    "SEK": 0.115,
+    "PLN": 0.044,
 }
 
 
@@ -391,44 +402,49 @@ def get_current_user_settings():
     right now, falling back to INR/English for logged-out pages (the
     login/signup screens etc.) so templates never crash for a missing
     session."""
+    # Cached on flask.g for the duration of ONE request: a page calls
+    # t() / the conv filter dozens of times, and without this the admin
+    # path would hit the database on every single call. g is per-request
+    # (never shared between users), so this can't leak one person's
+    # currency/language into another's.
+    from flask import g
+    cached = getattr(g, "_user_settings", None)
+    if cached is not None:
+        return cached
+
+    result = ("INR", "en")
+
     user_id = session.get("user_id")
-    if not user_id:
-        return "INR", "en"
-    user = User.query.get(user_id)
-    if not user:
-        return "INR", "en"
-    return (user.currency or "INR"), (getattr(user, "language", None) or "en")
+    user = User.query.get(user_id) if user_id else None
+    if user:
+        result = (user.currency or "INR"), (getattr(user, "language", None) or "en")
+    elif session.get("admin_logged_in"):
+        profile = get_admin_profile()
+        result = (profile.currency or "INR"), (profile.language or "en")
+
+    g._user_settings = result
+    return result
 
 
 # =========================================================
 # LANGUAGE
 # =========================================================
-# Full page-by-page translation of every one of this app's screens
-# into every language below is a much bigger job than can be verified
-# in one pass, so this ships as a real, working framework: the
-# language is saved per-user, every template already gets a `t()`
-# translator function for free (see the context_processor below), and
-# the strings that ARE wired up (the ones covered in LANG_STRINGS)
-# switch instantly and correctly. Languages/keys not yet added simply
-# fall back to English rather than showing a blank or broken label —
-# safe to extend gradually, page by page.
+
 SUPPORTED_LANGUAGES = {
     "en": "English",
     "hi": "हिन्दी (Hindi)",
+    "es": "Español (Spanish)",
+    "fr": "Français (French)",
+    "de": "Deutsch (German)",
+    "ar": "العربية (Arabic)",
+    "ru": "Русский (Russian)",
+    "tr": "Türkçe (Turkish)",
+    "ja": "日本語 (Japanese)",
 }
 
-# TRANSLATIONS holds EVERY static piece of text that was extracted out
-# of all 75 templates (~680 strings — menus, buttons, page headers,
-# helper text, admin screens, all of it). Each entry is
-# {"en": "<original text>", "hi": "<translation>", ...}. English and
-# Hindi are both 100% complete, which is why only those two appear in
-# SUPPORTED_LANGUAGES above — a language is only added to that list
-# once every key here has a real translation for it, so the dropdown
-# never offers a language that would silently fall back to English
-# halfway through the app. To add a new language: translate every
-# value in translations_data.py for that language code, then add it
-# to SUPPORTED_LANGUAGES above.
+
 from translations_data import TRANSLATIONS
+from countries_data import COUNTRIES
 
 
 def t(key):
@@ -460,13 +476,6 @@ def inject_currency_and_language():
 # =========================
 # CLOUDINARY HELPERS
 # =========================
-# These helpers let old-style local filenames (from before the Cloudinary
-# migration) keep working in templates/PDFs while every new upload uses
-# full Cloudinary secure_url values. This is what fixes the
-# "Internal Server Error" on Vercel: Vercel's filesystem is read-only
-# except for /tmp, so anything saved with file.save(local_path) or
-# os.remove(local_path) crashes there. Cloudinary removes the need to
-# write image files to disk at all.
 
 import tempfile
 
@@ -598,6 +607,7 @@ class User(db.Model):
 
     currency = db.Column(db.String(20),default="INR")
     language = db.Column(db.String(10),default="en")
+    country = db.Column(db.String(80))
 
     profile_pic = db.Column(db.String(300),default="default.png")
 
@@ -722,17 +732,27 @@ class AdminProfile(db.Model):
         db.String(300)
     )
 
-    # DB-backed admin credentials. These replace rewriting the .env file
-    # at runtime: that approach crashed on Vercel's read-only filesystem,
-    # didn't persist on Render restarts, and didn't even affect the
-    # running process (which always re-read os.getenv(...) fresh). The
-    # password is stored hashed, same as regular user passwords.
+    
     panel_password_hash = db.Column(
         db.String(300)
     )
 
     email = db.Column(
         db.String(200)
+    )
+
+    currency = db.Column(
+        db.String(20),
+        default="INR"
+    )
+
+    language = db.Column(
+        db.String(10),
+        default="en"
+    )
+
+    country = db.Column(
+        db.String(80)
     )
 
 def get_admin_profile():
@@ -747,10 +767,7 @@ def get_admin_profile():
         db.session.add(profile)
         db.session.commit()
 
-    # One-time bootstrap: the very first time this runs, seed the DB
-    # credentials from the ADMIN_PANEL_PASSWORD / ADMIN_EMAIL env vars,
-    # so nothing breaks for an existing deploy. After this runs once,
-    # the env vars are no longer read for these two values.
+    
     seeded = False
 
     if not profile.panel_password_hash and os.getenv("ADMIN_PANEL_PASSWORD"):
@@ -2400,18 +2417,7 @@ def expense_charts():
     # ---------------------------------------------------------
     # CHART DATA
     # ---------------------------------------------------------
-    # The old version combined every expense into one category
-    # chart. That is fine for a small dataset, but becomes hard
-    # to read when expenses span many months.
-    #
-    # New behavior:
-    # 1. Monthly trend = one value per month (never one point
-    #    per transaction).
-    # 2. Category charts = only the selected month.
-    # 3. "All Time" is available when the user wants the full
-    #    history.
-    # ---------------------------------------------------------
-
+    
     monthly_totals = {}
     monthly_category_totals = {}
 
@@ -4313,6 +4319,177 @@ def change_language():
         languages=SUPPORTED_LANGUAGES,
         active_language=user.language or "en"
     )
+
+
+# =========================================================
+# ADMIN CURRENCY & LANGUAGE
+# =========================================================
+
+@app.route("/admin_settings")
+@admin_required
+def admin_settings():
+
+    profile = get_admin_profile()
+
+    return render_template(
+        "admin_settings.html",
+        currencies=CURRENCY_SYMBOLS,
+        currency_names=CURRENCY_NAMES,
+        active_currency=profile.currency or "INR",
+        languages=SUPPORTED_LANGUAGES,
+        active_language=profile.language or "en"
+    )
+
+
+@app.route("/admin_change_currency", methods=["POST"])
+@admin_required
+def admin_change_currency():
+
+    currency = request.form.get("currency")
+
+    if currency not in CURRENCY_SYMBOLS:
+        flash("Unsupported currency selected ❌", "danger")
+        return redirect("/admin_settings")
+
+    profile = get_admin_profile()
+    profile.currency = currency
+    db.session.commit()
+
+    flash("Currency changed successfully 💱", "success")
+    return redirect("/admin_settings")
+
+
+@app.route("/admin_change_language", methods=["POST"])
+@admin_required
+def admin_change_language():
+
+    language = request.form.get("language")
+
+    if language not in SUPPORTED_LANGUAGES:
+        flash("Unsupported language selected ❌", "danger")
+        return redirect("/admin_settings")
+
+    profile = get_admin_profile()
+    profile.language = language
+    db.session.commit()
+
+    flash("Language changed successfully 🌐", "success")
+    return redirect("/admin_settings")
+
+
+# =========================================================
+# REGION / AUTO-DETECT (country -> currency + language)
+# =========================================================
+
+@app.route("/region_settings", methods=["GET", "POST"])
+@login_required
+def region_settings():
+
+    user = User.query.get(session["user_id"])
+
+    if request.method == "POST":
+
+        country = request.form.get("country")
+        auto_detect = request.form.get("auto_detect") == "on"
+
+        if country and country not in COUNTRIES:
+            flash("Unsupported country selected ❌", "danger")
+            return redirect("/region_settings")
+
+        if auto_detect and not country:
+            flash("Please select a country to use auto-detect ❌", "danger")
+            return redirect("/region_settings")
+
+        user.country = country
+
+        if auto_detect and country:
+            detected_currency, detected_language = COUNTRIES[country]
+            user.currency = detected_currency
+            user.language = detected_language
+            flash(
+                f"Auto-detected from {country}: currency and language updated 🌍",
+                "success"
+            )
+        else:
+            currency = request.form.get("currency")
+            language = request.form.get("language")
+
+            if currency and currency in CURRENCY_SYMBOLS:
+                user.currency = currency
+            if language and language in SUPPORTED_LANGUAGES:
+                user.language = language
+
+            flash("Region settings updated ✅", "success")
+
+        db.session.commit()
+        return redirect("/region_settings")
+
+    return render_template(
+        "region_settings.html",
+        countries=sorted(COUNTRIES.keys()),
+        active_country=user.country or "",
+        currencies=CURRENCY_SYMBOLS,
+        currency_names=CURRENCY_NAMES,
+        active_currency=user.currency or "INR",
+        languages=SUPPORTED_LANGUAGES,
+        active_language=user.language or "en"
+    )
+
+
+@app.route("/admin_region_settings", methods=["GET", "POST"])
+@admin_required
+def admin_region_settings():
+
+    profile = get_admin_profile()
+
+    if request.method == "POST":
+
+        country = request.form.get("country")
+        auto_detect = request.form.get("auto_detect") == "on"
+
+        if country and country not in COUNTRIES:
+            flash("Unsupported country selected ❌", "danger")
+            return redirect("/admin_region_settings")
+
+        if auto_detect and not country:
+            flash("Please select a country to use auto-detect ❌", "danger")
+            return redirect("/admin_region_settings")
+
+        profile.country = country
+
+        if auto_detect and country:
+            detected_currency, detected_language = COUNTRIES[country]
+            profile.currency = detected_currency
+            profile.language = detected_language
+            flash(
+                f"Auto-detected from {country}: currency and language updated 🌍",
+                "success"
+            )
+        else:
+            currency = request.form.get("currency")
+            language = request.form.get("language")
+
+            if currency and currency in CURRENCY_SYMBOLS:
+                profile.currency = currency
+            if language and language in SUPPORTED_LANGUAGES:
+                profile.language = language
+
+            flash("Region settings updated ✅", "success")
+
+        db.session.commit()
+        return redirect("/admin_region_settings")
+
+    return render_template(
+        "admin_region_settings.html",
+        countries=sorted(COUNTRIES.keys()),
+        active_country=profile.country or "",
+        currencies=CURRENCY_SYMBOLS,
+        currency_names=CURRENCY_NAMES,
+        active_currency=profile.currency or "INR",
+        languages=SUPPORTED_LANGUAGES,
+        active_language=profile.language or "en"
+    )
+
 
 @app.route("/backup_account")
 @login_required
