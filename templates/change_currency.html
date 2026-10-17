@@ -28,7 +28,8 @@
 
             color: white;
 
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
 
             position: relative;
 
@@ -310,6 +311,7 @@ input:-webkit-autofill:active {
 
     </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
 <body>
@@ -430,6 +432,7 @@ input:-webkit-autofill:active {
 
                     </form>
 
+                    <p class="text-center mt-3" style="color:#94a3b8;font-size:13px">{{ t('exchange_rates_label') }}: {{ rates_meta.source }}{% if rates_meta.date %} &middot; {{ rates_meta.date }}{% endif %}{% if not rates_meta.live %}<br><span style="color:#fbbf24">{{ t('rates_not_live') }}</span>{% endif %}</p>
                     <a
                         href="/settings_storage"
                         class="btn btn-light w-100 mt-4 back-btn"

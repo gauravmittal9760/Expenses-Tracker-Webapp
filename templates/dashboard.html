@@ -129,7 +129,9 @@
             border-right:
                 1px solid rgba(255,255,255,0.08);
 
-            min-height:100vh;
+            height:100vh;
+
+            align-self:flex-start;
 
             position:sticky;
 
@@ -137,7 +139,11 @@
 
             z-index:10;
 
-            overflow:hidden;
+            overflow-y:auto;
+
+            overflow-x:hidden;
+
+            scrollbar-width:thin;
         }
 
         .sidebar::before{
@@ -786,6 +792,12 @@
 
                 min-height:auto;
 
+                height:auto;
+
+                position:static;
+
+                overflow:visible;
+
             }
 
             .main-content {
@@ -845,9 +857,10 @@
 
     </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
-<body>
+<body data-theme-toggle>
 
 <div class="container-fluid">
 

@@ -1215,9 +1215,10 @@ SUPREME UI — ANIMATED STAT COUNTER
 
 </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
-<body>
+<body data-theme-toggle>
 
 <canvas id="admin-particles"></canvas>
 
@@ -1375,7 +1376,7 @@ SIDEBAR
 
         <i class="fa-solid fa-coins"></i>
 
-        Currency &amp; Language
+        {{ t('currency_and_language') }}
 
     </a>
 

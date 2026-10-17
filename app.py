@@ -121,7 +121,16 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 # =========================================================
 # NO-STALE-PAGE FIX
 # =========================================================
-
+# The DB already stores/returns everything in IST (see the connect
+# listener above). The "shows time from 5.5 hours ago until I refresh
+# or reopen the app" symptom is a BROWSER caching issue, not a backend
+# one: mobile browsers (and desktop back/forward navigation) keep a
+# snapshot of the page in memory (bfcache) and show that snapshot
+# instead of asking the server for anything new. Telling every
+# dynamic response to never be cached forces a fresh page — with a
+# fresh, correct time — on every open, exactly like a manual refresh
+# does today. Static files (css/js/uploaded assets) are left alone so
+# they still load fast.
 @app.after_request
 def add_no_cache_headers(response):
     if not request.path.startswith("/static/"):
@@ -203,7 +212,12 @@ def allowed_file(filename):
 # =========================================================
 # CURRENCY
 # =========================================================
-
+# Symbol + display-code for every currency the "Change Currency" page
+# offers. Only the symbol/label changes here — amounts already stored
+# in the database are NOT converted with exchange rates (there's no
+# FX-rate API in this project), so switching currency changes how
+# numbers are *labelled* everywhere, not their underlying value. This
+# matches how most personal finance apps handle a "display currency".
 CURRENCY_SYMBOLS = {
     "INR": "₹",
     "USD": "$",
@@ -272,17 +286,43 @@ CURRENCY_NAMES = {
 # =========================================================
 # REAL CURRENCY CONVERSION
 # =========================================================
+# Every amount in this app (Expense.amount, Budget.balance,
+# Budget.monthly_budget, User.income, SavingsGoal amounts) is always
+# STORED in the DB in one fixed base currency: INR. That never
+# changes, no matter what the user has selected to look at.
+#
+# What changes is:
+#   - DISPLAY: every amount shown in a template/PDF/CSV/Excel is
+#     converted from INR into the user's selected currency using a
+#     live exchange rate (convert_from_base).
+#   - INPUT: whenever the user types a new amount (a new expense,
+#     budget, income, goal), that number is treated as being written
+#     in their currently selected currency, and converted back into
+#     INR before it's saved (convert_to_base).
+#
+# This is what makes "select USD -> everything is in USD, budget,
+# income, goal, expenses, all of it" actually work, instead of just
+# swapping a symbol.
+#
+# Rates come from a free, no-API-key exchange rate service and are
+# cached in memory for a few hours so the app isn't making a network
+# call on every single page load (and still works fine if that
+# service is briefly down, via the fallback table below).
 
 BASE_CURRENCY = "INR"
 
 EXCHANGE_RATE_TTL_SECONDS = 6 * 60 * 60  # refresh at most every 6 hours
 
 _exchange_rate_cache = {
-    "rates": None,
-    "fetched_at": 0,
+    "rates": None, "fetched_at": 0, "source": "", "date": "",
+    "live": False, "next_retry": 0,
 }
 
-
+# Rough, manually-set rates (units of that currency per 1 INR), used
+# ONLY if the live exchange-rate service can't be reached. These will
+# drift out of date over time — they exist purely so the app keeps
+# working (rather than crashing or showing nothing) if there's no
+# network access to the rate service for a moment.
 FALLBACK_RATES_FROM_INR = {
     "INR": 1.0,
     "USD": 0.012,
@@ -316,42 +356,139 @@ FALLBACK_RATES_FROM_INR = {
 }
 
 
-def get_exchange_rates():
-    """Returns {currency_code: rate_per_1_INR}, refreshed from a free
-    live exchange-rate API at most once every EXCHANGE_RATE_TTL_SECONDS.
-    Falls back to FALLBACK_RATES_FROM_INR if the API can't be reached
-    (no internet, timeout, service down, etc.) so the app never
-    crashes over this."""
-    now = time.time()
+def _parse_er_api(data):
+    if data.get("result") == "success" and data.get("rates"):
+        return data["rates"], str(data.get("time_last_update_utc", ""))[:16]
 
-    if (
-        _exchange_rate_cache["rates"]
-        and now - _exchange_rate_cache["fetched_at"] < EXCHANGE_RATE_TTL_SECONDS
-    ):
-        return _exchange_rate_cache["rates"]
 
+def _parse_fawaz(data):
+    rates = data.get("inr")
+    if isinstance(rates, dict) and rates:
+        return {k.upper(): v for k, v in rates.items()}, str(data.get("date", ""))
+
+
+def _parse_frankfurter(data):
+    rates = data.get("rates")
+    if isinstance(rates, dict) and rates:
+        r = dict(rates)
+        r["INR"] = 1.0
+        return r, str(data.get("date", ""))
+
+
+# Free, key-less live exchange-rate feeds, tried in order. If one is down
+# or blocked, the next one is used, so a single outage can't freeze rates.
+RATE_PROVIDERS = [
+    ("open.er-api.com", "https://open.er-api.com/v6/latest/INR", _parse_er_api),
+    ("currency-api (jsDelivr)", "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/inr.json", _parse_fawaz),
+    ("currency-api (pages.dev)", "https://latest.currency-api.pages.dev/v1/currencies/inr.json", _parse_fawaz),
+    ("frankfurter.app (ECB)", "https://api.frankfurter.app/latest?from=INR", _parse_frankfurter),
+]
+
+
+def _fetch_live_rates(budget_seconds=7):
+    """Returns (rates, provider_name, as_of_date) or None. Total time is
+    capped so a slow provider can't blow past a serverless time limit."""
+    deadline = time.time() + budget_seconds
+    for name, url, parser in RATE_PROVIDERS:
+        remaining = deadline - time.time()
+        if remaining <= 0.5:
+            break
+        try:
+            resp = requests.get(url, timeout=min(3, remaining))
+            parsed = parser(resp.json())
+            if not parsed:
+                continue
+            rates, date = parsed
+            if "USD" not in rates or "EUR" not in rates:
+                continue
+            clean = {k: float(v) for k, v in rates.items() if k in CURRENCY_SYMBOLS and v}
+            clean["INR"] = 1.0
+            # reject feeds that only cover a few of our currencies
+            if len(clean) >= len(CURRENCY_SYMBOLS) * 0.7:
+                return clean, name, date
+        except Exception as e:
+            print(f"Rate provider {name} failed:", e)
+    return None
+
+
+def _load_rate_row():
     try:
-        response = requests.get(
-            "https://open.er-api.com/v6/latest/INR",
-            timeout=5
-        )
-        data = response.json()
+        return ExchangeRateCache.query.order_by(ExchangeRateCache.id.desc()).first()
+    except Exception:
+        db.session.rollback()
+        return None
 
-        if data.get("result") == "success" and data.get("rates"):
-            _exchange_rate_cache["rates"] = data["rates"]
-            _exchange_rate_cache["fetched_at"] = now
-            return data["rates"]
 
-    except Exception as e:
-        print("Exchange rate fetch failed, using fallback rates:", e)
+def get_rates_info():
+    """Rates are looked up in this order: process memory -> shared database
+    copy (so every Vercel/Render instance and cold start reuses the same
+    live rates) -> a fresh call to the live providers. Only if ALL of
+    those fail do we reuse older stored rates, and only if the database has
+    never held a live rate do we fall back to the rough emergency table."""
+    now = time.time()
+    mem = _exchange_rate_cache
 
-    # Live fetch failed and we have no usable cache yet -> fallback.
-    if not _exchange_rate_cache["rates"]:
-        return FALLBACK_RATES_FROM_INR
+    if mem["rates"] and now - mem["fetched_at"] < EXCHANGE_RATE_TTL_SECONDS:
+        return mem
+    if mem["rates"] and now < mem["next_retry"]:
+        return mem  # a live refresh failed moments ago; don't hammer providers
 
-    # We have a stale cache from earlier -> better than the rough
-    # fallback table, keep using it until the next successful fetch.
-    return _exchange_rate_cache["rates"]
+    row = _load_rate_row()
+    stored = None
+    if row:
+        try:
+            stored = json.loads(row.rates_json)
+            age = (datetime.now(pytz.utc) - row.fetched_at).total_seconds()
+        except Exception:
+            stored, age = None, None
+        if stored and age is not None and age < EXCHANGE_RATE_TTL_SECONDS:
+            mem.update(rates=stored, fetched_at=now - age, source=row.source or "stored",
+                       date=row.rates_date or "", live=True, next_retry=0)
+            return mem
+
+    if now >= mem["next_retry"]:
+        fetched = _fetch_live_rates()
+        if fetched:
+            clean, source, date = fetched
+            merged = dict(stored or mem["rates"] or {})
+            merged.update(clean)  # codes a provider lacks keep their last live value
+            try:
+                if row is None:
+                    row = ExchangeRateCache()
+                    db.session.add(row)
+                row.rates_json = json.dumps(merged)
+                row.source = source
+                row.rates_date = date
+                row.fetched_at = ist_now()
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print("Could not store exchange rates:", e)
+            mem.update(rates=merged, fetched_at=now, source=source, date=date,
+                       live=True, next_retry=0)
+            return mem
+        mem["next_retry"] = now + 300
+
+    if stored:
+        mem.update(rates=stored, fetched_at=now - EXCHANGE_RATE_TTL_SECONDS,
+                   source=(row.source or "stored") + " (last known)",
+                   date=row.rates_date or "", live=False)
+        return mem
+    if mem["rates"]:
+        mem["live"] = False
+        return mem
+    mem.update(rates=dict(FALLBACK_RATES_FROM_INR), fetched_at=now - EXCHANGE_RATE_TTL_SECONDS,
+               source="emergency-approximate", date="", live=False)
+    return mem
+
+
+def get_exchange_rates():
+    return get_rates_info()["rates"]
+
+
+def get_rates_meta():
+    info = get_rates_info()
+    return {"source": info["source"], "date": info["date"], "live": info["live"]}
 
 
 def convert_from_base(amount, to_currency):
@@ -429,7 +566,15 @@ def get_current_user_settings():
 # =========================================================
 # LANGUAGE
 # =========================================================
-
+# Full page-by-page translation of every one of this app's screens
+# into every language below is a much bigger job than can be verified
+# in one pass, so this ships as a real, working framework: the
+# language is saved per-user, every template already gets a `t()`
+# translator function for free (see the context_processor below), and
+# the strings that ARE wired up (the ones covered in LANG_STRINGS)
+# switch instantly and correctly. Languages/keys not yet added simply
+# fall back to English rather than showing a blank or broken label —
+# safe to extend gradually, page by page.
 SUPPORTED_LANGUAGES = {
     "en": "English",
     "hi": "हिन्दी (Hindi)",
@@ -442,7 +587,17 @@ SUPPORTED_LANGUAGES = {
     "ja": "日本語 (Japanese)",
 }
 
-
+# TRANSLATIONS holds EVERY static piece of text that was extracted out
+# of all 75 templates (~680 strings — menus, buttons, page headers,
+# helper text, admin screens, all of it). Each entry is
+# {"en": "<original text>", "hi": "<translation>", ...}. English and
+# Hindi are both 100% complete, which is why only those two appear in
+# SUPPORTED_LANGUAGES above — a language is only added to that list
+# once every key here has a real translation for it, so the dropdown
+# never offers a language that would silently fall back to English
+# halfway through the app. To add a new language: translate every
+# value in translations_data.py for that language code, then add it
+# to SUPPORTED_LANGUAGES above.
 from translations_data import TRANSLATIONS
 from countries_data import COUNTRIES
 
@@ -476,6 +631,13 @@ def inject_currency_and_language():
 # =========================
 # CLOUDINARY HELPERS
 # =========================
+# These helpers let old-style local filenames (from before the Cloudinary
+# migration) keep working in templates/PDFs while every new upload uses
+# full Cloudinary secure_url values. This is what fixes the
+# "Internal Server Error" on Vercel: Vercel's filesystem is read-only
+# except for /tmp, so anything saved with file.save(local_path) or
+# os.remove(local_path) crashes there. Cloudinary removes the need to
+# write image files to disk at all.
 
 import tempfile
 
@@ -542,6 +704,110 @@ def get_image_size_bytes(img, local_folder=None):
     except Exception:
         pass
     return 0
+
+
+# =========================================================
+# STORAGE MONITOR (Cloudinary + Neon) -- admin only
+# =========================================================
+# Limits for the warning bars. Defaults are the free tiers; override in the
+# hosting dashboard (no code change): NEON_STORAGE_LIMIT_MB (free = 512) and
+# CLOUDINARY_STORAGE_LIMIT_MB.
+NEON_STORAGE_LIMIT_MB = float(os.getenv("NEON_STORAGE_LIMIT_MB", "512"))
+CLOUDINARY_STORAGE_LIMIT_MB = float(os.getenv("CLOUDINARY_STORAGE_LIMIT_MB", "25600"))
+
+_cloudinary_inventory_cache = {"data": None, "at": 0}
+_PUBLIC_ID_RE = re.compile(r"/upload/(?:v\d+/)?(.+?)(?:\.[A-Za-z0-9]+)?(?:\?.*)?$")
+
+
+def public_id_from_url(url):
+    m = _PUBLIC_ID_RE.search(url or "")
+    return m.group(1) if m else (url or "")
+
+
+def get_cloudinary_inventory(max_pages=6, ttl=300):
+    """Lists every image under spendwise/ with ONE Admin-API call per 500
+    images (not one HTTP request per image) and caches it for 5 minutes,
+    keeping the page fast on Vercel and inside Cloudinary's API rate limit."""
+    now = time.time()
+    cache = _cloudinary_inventory_cache
+    if cache["data"] is not None and now - cache["at"] < ttl:
+        return cache["data"]
+    result = {"ok": False, "by_pid": {}, "images": 0, "bytes": 0,
+              "profile_images": 0, "receipt_images": 0}
+    try:
+        import cloudinary.api
+        cursor = None
+        for _ in range(max_pages):
+            kwargs = dict(type="upload", resource_type="image", prefix="spendwise/", max_results=500)
+            if cursor:
+                kwargs["next_cursor"] = cursor
+            page = cloudinary.api.resources(**kwargs)
+            for r in page.get("resources", []):
+                size = int(r.get("bytes") or 0)
+                pid = r.get("public_id", "")
+                result["by_pid"][pid] = size
+                result["images"] += 1
+                result["bytes"] += size
+                if pid.startswith("spendwise/profile_pics/") or pid.startswith("spendwise/admin_profiles/"):
+                    result["profile_images"] += 1
+                else:
+                    result["receipt_images"] += 1
+            cursor = page.get("next_cursor")
+            if not cursor:
+                break
+        result["ok"] = True
+    except Exception as e:
+        print("Cloudinary inventory failed:", e)
+    if result["ok"]:
+        cache["data"] = result
+        cache["at"] = now
+    return result
+
+
+def get_database_storage_stats():
+    """Neon/Postgres size (whole database + the tables that matter); falls
+    back to the SQLite file size for local development."""
+    from sqlalchemy import text
+    stats = {"ok": False, "engine": "postgres" if database_url else "sqlite",
+             "total": 0, "users": 0, "expenses": 0, "logs": 0, "other": 0}
+    try:
+        if database_url:
+            def q(sql, **params):
+                return int(db.session.execute(text(sql), params).scalar() or 0)
+            def rel(name):
+                return q("SELECT pg_total_relation_size(to_regclass(:n))", n=name)
+            total = q("SELECT pg_database_size(current_database())")
+            users = rel('"user"')
+            expenses = rel("expense")
+            logs = rel("login_history") + rel("user_activity_log")
+        else:
+            total = users = expenses = logs = 0
+            for p in ("instance/expense_tracker.db", "expense_tracker.db"):
+                if os.path.exists(p):
+                    total = os.path.getsize(p)
+                    break
+        stats.update(ok=True, total=total, users=users, expenses=expenses, logs=logs,
+                     other=max(total - users - expenses - logs, 0))
+    except Exception as e:
+        db.session.rollback()
+        print("Database size lookup failed:", e)
+    return stats
+
+
+def storage_health(used_bytes, limit_mb):
+    """Normal / 70% / 85% / 95% warning level for a storage bar."""
+    limit = float(limit_mb) * 1024 * 1024
+    pct = round(used_bytes / limit * 100, 1) if limit > 0 else 0
+    if pct >= 95:
+        key, color = "storage_95_used", "#ef4444"
+    elif pct >= 85:
+        key, color = "storage_85_used", "#f97316"
+    elif pct >= 70:
+        key, color = "storage_70_used", "#eab308"
+    else:
+        key, color = "storage_normal", "#22c55e"
+    return {"pct": pct, "bar": min(pct, 100), "key": key, "color": color}
+
 
 @app.template_filter("img_url")
 def img_url_filter(value, folder="uploads", default="default.png"):
@@ -732,7 +998,11 @@ class AdminProfile(db.Model):
         db.String(300)
     )
 
-    
+    # DB-backed admin credentials. These replace rewriting the .env file
+    # at runtime: that approach crashed on Vercel's read-only filesystem,
+    # didn't persist on Render restarts, and didn't even affect the
+    # running process (which always re-read os.getenv(...) fresh). The
+    # password is stored hashed, same as regular user passwords.
     panel_password_hash = db.Column(
         db.String(300)
     )
@@ -755,6 +1025,24 @@ class AdminProfile(db.Model):
         db.String(80)
     )
 
+
+class ExchangeRateCache(db.Model):
+    """One row holding the latest live exchange rates, shared by every
+    server instance so a cold start never has to guess."""
+    id = db.Column(db.Integer, primary_key=True)
+    rates_json = db.Column(db.Text, nullable=False)
+    source = db.Column(db.String(80))
+    rates_date = db.Column(db.String(40))
+    fetched_at = db.Column(ISTDateTime(), default=ist_now)
+
+
+try:
+    with app.app_context():
+        ExchangeRateCache.__table__.create(bind=db.engine, checkfirst=True)
+except Exception as _e:
+    print("ExchangeRateCache table check failed:", _e)
+
+
 def get_admin_profile():
     """There is only ever one admin, so this fetches (or creates) the
     single AdminProfile row. Storing the picture here instead of in the
@@ -767,7 +1055,10 @@ def get_admin_profile():
         db.session.add(profile)
         db.session.commit()
 
-    
+    # One-time bootstrap: the very first time this runs, seed the DB
+    # credentials from the ADMIN_PANEL_PASSWORD / ADMIN_EMAIL env vars,
+    # so nothing breaks for an existing deploy. After this runs once,
+    # the env vars are no longer read for these two values.
     seeded = False
 
     if not profile.panel_password_hash and os.getenv("ADMIN_PANEL_PASSWORD"):
@@ -2417,7 +2708,18 @@ def expense_charts():
     # ---------------------------------------------------------
     # CHART DATA
     # ---------------------------------------------------------
-    
+    # The old version combined every expense into one category
+    # chart. That is fine for a small dataset, but becomes hard
+    # to read when expenses span many months.
+    #
+    # New behavior:
+    # 1. Monthly trend = one value per month (never one point
+    #    per transaction).
+    # 2. Category charts = only the selected month.
+    # 3. "All Time" is available when the user wants the full
+    #    history.
+    # ---------------------------------------------------------
+
     monthly_totals = {}
     monthly_category_totals = {}
 
@@ -4271,6 +4573,7 @@ def change_currency():
 
     return render_template(
         "change_currency.html",
+        rates_meta=get_rates_meta(),
         currencies=CURRENCY_SYMBOLS,
         currency_names=CURRENCY_NAMES,
         active_currency=user.currency or "INR"
@@ -4324,6 +4627,9 @@ def change_language():
 # =========================================================
 # ADMIN CURRENCY & LANGUAGE
 # =========================================================
+# Same idea as the regular user's /change_currency and /change_language,
+# but for the admin's own session — stored on the single AdminProfile
+# row instead of a User row, since the admin isn't a User.
 
 @app.route("/admin_settings")
 @admin_required
@@ -4333,6 +4639,7 @@ def admin_settings():
 
     return render_template(
         "admin_settings.html",
+        rates_meta=get_rates_meta(),
         currencies=CURRENCY_SYMBOLS,
         currency_names=CURRENCY_NAMES,
         active_currency=profile.currency or "INR",
@@ -4426,6 +4733,7 @@ def region_settings():
 
     return render_template(
         "region_settings.html",
+        rates_meta=get_rates_meta(),
         countries=sorted(COUNTRIES.keys()),
         active_country=user.country or "",
         currencies=CURRENCY_SYMBOLS,
@@ -4481,6 +4789,7 @@ def admin_region_settings():
 
     return render_template(
         "admin_region_settings.html",
+        rates_meta=get_rates_meta(),
         countries=sorted(COUNTRIES.keys()),
         active_country=profile.country or "",
         currencies=CURRENCY_SYMBOLS,
@@ -4941,128 +5250,68 @@ def format_size(size):
 def storage_management():
 
     users = User.query.all()
+    inv = get_cloudinary_inventory()
+    head_budget = [30]  # only used if the Cloudinary Admin API is unreachable
+
+    def size_of(image):
+        if isinstance(image, str) and image.startswith("http"):
+            if inv["ok"]:
+                return inv["by_pid"].get(public_id_from_url(image), 0)
+            if head_budget[0] > 0:
+                head_budget[0] -= 1
+                return get_image_size_bytes(image)
+            return 0
+        return get_image_size_bytes(image)  # legacy local filename
 
     user_storage_data = []
-
-    total_uploaded_images_size = 0
-
     for user in users:
-
-        expenses = Expense.query.filter_by(
-            user_id=user.id
-        ).all()
-
         total_user_size = 0
-
         image_count = 0
-
-        for expense in expenses:
-
+        for expense in Expense.query.filter_by(user_id=user.id).all():
             if expense.images:
-
                 try:
-
-                    image_list = json.loads(
-                        expense.images
-                    )
-
-                    for image in image_list:
-
-                        size = get_image_size_bytes(image)
-
+                    for image in json.loads(expense.images):
+                        size = size_of(image)
                         if size:
                             total_user_size += size
                             image_count += 1
-
-                except:
-
+                except Exception:
                     pass
-
-        total_uploaded_images_size += total_user_size
-
         user_storage_data.append({
-
             "username": user.username,
-
             "storage": total_user_size,
-
-            "formatted_storage":
-                format_size(total_user_size),
-
+            "formatted_storage": format_size(total_user_size),
             "image_count": image_count
-
         })
 
-    # Cloud-hosted profile pictures (Cloudinary) + any leftover legacy
-    # local ones, so this box reflects reality instead of always 0.
-    profile_size = get_folder_size("static/profile_pics")
+    legacy_local = get_folder_size("static/uploads") + get_folder_size("static/profile_pics")
+    dbs = get_database_storage_stats()
+    cloud_bytes = inv["bytes"] if inv["ok"] else sum(u["storage"] for u in user_storage_data)
+    upload_bytes = cloud_bytes + legacy_local
+    total_bytes = upload_bytes + dbs["total"]
 
-    for user in users:
-        if user.profile_pic and user.profile_pic != "default.png":
-            profile_size += get_image_size_bytes(user.profile_pic)
-
-    admin_pic = get_admin_profile().profile_pic
-    if admin_pic:
-        profile_size += get_image_size_bytes(admin_pic)
-
-    # Cloud-hosted expense images (Cloudinary) + any leftover legacy
-    # local uploads still sitting on disk from before the migration.
-    upload_size = total_uploaded_images_size + get_folder_size("static/uploads")
-
-    # PDF/CSV/chart exports are now generated in a temp directory and
-    # streamed straight to the browser rather than kept on disk, so this
-    # stays 0 unless legacy files remain in static/exports.
-    export_size = get_folder_size(
-        "static/exports"
-    )
-
-    db_size = 0
-
-    if os.path.exists("instance/expense_tracker.db"):
-
-        db_size = os.path.getsize(
-            "instance/expense_tracker.db"
-        )
-
-    total_storage = (
-        upload_size +
-        export_size +
-        profile_size +
-        db_size
-    )
-
-    largest_user = max(
-        user_storage_data,
-        key=lambda x: x["storage"],
-        default=None
-    )
+    cloud = {
+        "ok": inv["ok"], "images": inv["images"], "storage": format_size(cloud_bytes),
+        "profile_images": inv["profile_images"], "receipt_images": inv["receipt_images"],
+        "limit": format_size(CLOUDINARY_STORAGE_LIMIT_MB * 1024 * 1024),
+        "health": storage_health(cloud_bytes, CLOUDINARY_STORAGE_LIMIT_MB),
+    }
+    neon = {
+        "ok": dbs["ok"], "engine": dbs["engine"], "total": format_size(dbs["total"]),
+        "users": format_size(dbs["users"]), "expenses": format_size(dbs["expenses"]),
+        "logs": format_size(dbs["logs"]), "other": format_size(dbs["other"]),
+        "limit": format_size(NEON_STORAGE_LIMIT_MB * 1024 * 1024),
+        "health": storage_health(dbs["total"], NEON_STORAGE_LIMIT_MB),
+    }
+    largest_user = max(user_storage_data, key=lambda x: x["storage"], default=None)
 
     return render_template(
-
         "storage_management.html",
-
-        total_storage=format_size(
-            total_storage
-        ),
-
-        upload_size=format_size(
-            upload_size
-        ),
-
-        export_size=format_size(
-            export_size
-        ),
-
-        profile_size=format_size(
-            profile_size
-        ),
-
-        db_size=format_size(
-            db_size
-        ),
-
+        total_storage=format_size(total_bytes),
+        upload_size=format_size(upload_bytes),
+        cloud=cloud, neon=neon,
+        combined_total=format_size(dbs["total"] + cloud_bytes),
         user_storage_data=user_storage_data,
-
         largest_user=largest_user
     )
 

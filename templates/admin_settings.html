@@ -12,7 +12,7 @@
 >
 
 <title>
-    Admin Currency &amp; Language
+    {{ t('currency_and_language') }}
 </title>
 
 <link
@@ -783,6 +783,7 @@ MOBILE
 
 </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
 <body>
@@ -811,13 +812,13 @@ MOBILE
 
             <h1>
 
-                Currency &amp; Language
+                {{ t('currency_and_language') }}
 
             </h1>
 
             <p>
 
-                Set the currency and language used across the admin panel.
+                {{ t('admin_settings_subtitle') }}
 
             </p>
 
@@ -825,7 +826,7 @@ MOBILE
 
         <div class="live-security">
 
-            ⚡ Admin Preference
+            {{ t('admin_preference') }}
 
         </div>
 
@@ -847,13 +848,13 @@ MOBILE
 
             <h2>
 
-                Change Currency
+                {{ t('change_currency') }}
 
             </h2>
 
             <div class="card-subtitle">
 
-                Currently set to: {{ currency_symbol }} {{ active_currency }}
+                {{ t('currently_set_to') }} {{ currency_symbol }} {{ active_currency }}
 
             </div>
 
@@ -891,7 +892,7 @@ MOBILE
 
                     <i class="fa-solid fa-floppy-disk"></i>
 
-                    Save Currency
+                    {{ t('save_currency') }}
 
                 </button>
 
@@ -911,13 +912,13 @@ MOBILE
 
             <h2>
 
-                Change Language
+                {{ t('change_language') }}
 
             </h2>
 
             <div class="card-subtitle">
 
-                Currently set to: {{ languages.get(active_language, "English") }}
+                {{ t('currently_set_to') }} {{ languages.get(active_language, "English") }}
 
             </div>
 
@@ -955,7 +956,7 @@ MOBILE
 
                     <i class="fa-solid fa-floppy-disk"></i>
 
-                    Save Language
+                    {{ t('save_language') }}
 
                 </button>
 
@@ -964,6 +965,9 @@ MOBILE
         </div>
 
     </div>
+
+    <div class="glass-card"><p class="text-center mt-3" style="color:#94a3b8;font-size:13px">{{ t('exchange_rates_label') }}: {{ rates_meta.source }}{% if rates_meta.date %} &middot; {{ rates_meta.date }}{% endif %}{% if not rates_meta.live %}<br><span style="color:#fbbf24">{{ t('rates_not_live') }}</span>{% endif %}</p>
+</div>
 
     <!-- FLASH MESSAGES -->
 
@@ -989,13 +993,13 @@ MOBILE
 
     <a href="/admin_region_settings">
         <button class="back-btn" style="margin-bottom:12px;">
-            🌍 Region &amp; Auto-Detect (set by country)
+            🌍 {{ t('region_auto_detect_by_country') }}
         </button>
     </a>
 
     <a href="/admin_dashboard">
         <button class="back-btn">
-            Back to Admin Dashboard
+            {{ t('back_to_admin_dashboard_2') }}
         </button>
     </a>
 

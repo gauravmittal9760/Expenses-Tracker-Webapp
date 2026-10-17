@@ -434,6 +434,7 @@ input:-webkit-autofill:active {
 
     </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
 <body>
@@ -766,13 +767,13 @@ input:-webkit-autofill:active {
 
                             <div class="setting-title">
 
-                                Region &amp; Auto-Detect
+                                {{ t('region_auto_detect') }}
 
                             </div>
 
                             <div class="setting-desc">
 
-                                Pick your country to auto-set currency &amp; language
+                                {{ t('region_settings_desc') }}
 
                             </div>
 

@@ -832,6 +832,27 @@ RESPONSIVE
 
 </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+<style>
+.stats-grid{grid-template-columns:repeat(2,1fr)!important}
+@media(max-width:600px){.stats-grid{grid-template-columns:1fr!important}}
+.monitor-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin:26px 0}
+@media(max-width:900px){.monitor-grid{grid-template-columns:1fr}}
+.monitor-card{text-align:left}
+.monitor-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.monitor-head h3{margin:0;font-size:22px;font-weight:800;color:#fff}
+.m-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07);color:#cbd5e1;font-size:15px}
+.m-row b{color:#fff}
+.m-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin:16px 0 8px}
+.m-bar-fill{height:100%;border-radius:99px}
+.m-status{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#cbd5e1}
+.m-chip{padding:4px 12px;border-radius:99px;font-weight:700;color:#0b1220}
+.total-card{text-align:center;margin-bottom:26px}
+.total-card h2{margin:6px 0}
+.health-legend{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin-top:10px;color:#e2e8f0}
+.health-legend span{display:flex;align-items:center;gap:8px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+</style>
 </head>
 
 <body>
@@ -940,50 +961,48 @@ RESPONSIVE
 
         </div>
 
-        <div class="glass-card">
+    </div>
 
-            <div class="icon-wrap yellow-bg">
+    <!-- CLOUDINARY + NEON MONITOR -->
 
-                <i class="fa-solid fa-file-export"></i>
+    <div class="monitor-grid">
 
-            </div>
-
-            <h2>
-
-                {{ export_size }}
-
-            </h2>
-
-            <p>
-
-                {{ t('export_files') }}
-
-            </p>
-
+        <div class="glass-card monitor-card">
+            <div class="monitor-head"><div class="icon-wrap cyan-bg"><i class="fa-solid fa-cloud"></i></div><h3>{{ t('cloudinary') }}</h3></div>
+            {% if cloud.ok %}
+            <div class="m-row"><span>{{ t('images') }}</span><b>{{ cloud.images }}</b></div>
+            <div class="m-row"><span>{{ t('storage') }}</span><b>{{ cloud.storage }}</b></div>
+            <div class="m-row"><span>{{ t('profile_images') }}</span><b>{{ cloud.profile_images }}</b></div>
+            <div class="m-row"><span>{{ t('receipt_images') }}</span><b>{{ cloud.receipt_images }}</b></div>
+            <div class="m-bar"><div class="m-bar-fill" style="width:{{ cloud.health.bar }}%;background:{{ cloud.health.color }}"></div></div>
+                <div class="m-status"><span>{{ cloud.health.pct }}% / {{ cloud.limit }}</span><span class="m-chip" style="background:{{ cloud.health.color }}">{{ t(cloud.health.key) }}</span></div>
+            {% else %}<p class="text-center" style="color:#fca5a5">{{ t('storage_data_unavailable') }}</p>{% endif %}
         </div>
 
-        <div class="glass-card">
-
-            <div class="icon-wrap purple-bg">
-
-                <i class="fa-solid fa-database"></i>
-
-            </div>
-
-            <h2>
-
-                {{ db_size }}
-
-            </h2>
-
-            <p>
-
-                {{ t('database_size') }}
-
-            </p>
-
+        <div class="glass-card monitor-card">
+            <div class="monitor-head"><div class="icon-wrap purple-bg"><i class="fa-solid fa-database"></i></div><h3>{{ t('neon_database') }}</h3></div>
+            {% if neon.ok %}
+            <div class="m-row"><span>{{ t('database_size') }}</span><b>{{ neon.total }}</b></div>
+            <div class="m-row"><span>{{ t('users_table') }}</span><b>{{ neon.users }}</b></div>
+            <div class="m-row"><span>{{ t('expenses_label') }}</span><b>{{ neon.expenses }}</b></div>
+            <div class="m-row"><span>{{ t('logs_label') }}</span><b>{{ neon.logs }}</b></div>
+            <div class="m-row"><span>{{ t('other_label') }}</span><b>{{ neon.other }}</b></div>
+            <div class="m-bar"><div class="m-bar-fill" style="width:{{ neon.health.bar }}%;background:{{ neon.health.color }}"></div></div>
+                <div class="m-status"><span>{{ neon.health.pct }}% / {{ neon.limit }}</span><span class="m-chip" style="background:{{ neon.health.color }}">{{ t(neon.health.key) }}</span></div>
+            {% else %}<p class="text-center" style="color:#fca5a5">{{ t('storage_data_unavailable') }}</p>{% endif %}
         </div>
 
+    </div>
+
+    <div class="glass-card total-card">
+        <p>{{ t('total_neon_cloudinary') }}</p>
+        <h2>{{ combined_total }}</h2>
+        <div class="health-legend">
+            <span><i class="dot" style="background:#22c55e"></i>{{ t('storage_normal') }}</span>
+            <span><i class="dot" style="background:#eab308"></i>{{ t('storage_70_used') }}</span>
+            <span><i class="dot" style="background:#f97316"></i>{{ t('storage_85_used') }}</span>
+            <span><i class="dot" style="background:#ef4444"></i>{{ t('storage_95_used') }}</span>
+        </div>
     </div>
 
     <!-- TABLE -->

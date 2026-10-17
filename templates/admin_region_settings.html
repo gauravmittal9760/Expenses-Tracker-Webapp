@@ -12,7 +12,7 @@
 >
 
 <title>
-    Admin Region &amp; Auto-Detect
+    {{ t('region_auto_detect') }}
 </title>
 
 <link
@@ -783,6 +783,7 @@ MOBILE
 
 </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
 <body>
@@ -811,13 +812,13 @@ MOBILE
 
             <h1>
 
-                Region &amp; Auto-Detect
+                {{ t('region_auto_detect') }}
 
             </h1>
 
             <p>
 
-                Pick a country to auto-fill the admin panel's currency and language, or set them manually.
+                {{ t('admin_region_subtitle') }}
 
             </p>
 
@@ -825,7 +826,7 @@ MOBILE
 
         <div class="live-security">
 
-            ⚡ Admin Preference
+            {{ t('admin_preference') }}
 
         </div>
 
@@ -837,7 +838,7 @@ MOBILE
 
         <div class="card-subtitle">
 
-            Currently using: {{ currency_symbol }} {{ active_currency }} &middot; {{ languages.get(active_language, "English") }}{% if active_country %} &middot; {{ active_country }}{% endif %}
+            {{ t('currently_using_colon') }} {{ currency_symbol }} {{ active_currency }} &middot; {{ languages.get(active_language, "English") }}{% if active_country %} &middot; {{ active_country }}{% endif %}
 
         </div>
 
@@ -859,13 +860,13 @@ MOBILE
 
             <h2>
 
-                Country &amp; Auto-Detect
+                {{ t('country_auto_detect') }}
 
             </h2>
 
             <div class="card-subtitle">
 
-                Select a country, then tick auto-detect to set currency &amp; language together.
+                {{ t('admin_region_hint') }}
 
             </div>
 
@@ -881,7 +882,7 @@ MOBILE
                         id="adminCountrySelect"
                         style="appearance:auto; color:white; background:transparent;"
                     >
-                        <option value="" style="color:black;">-- Select country --</option>
+                        <option value="" style="color:black;">{{ t('select_country_short') }}</option>
                         {% for c in countries %}
                         <option
                             value="{{ c }}"
@@ -904,7 +905,7 @@ MOBILE
                         {% if active_country %}checked{% endif %}
                         onchange="adminToggleManual()"
                     >
-                    <label for="adminAutoDetect">&nbsp;Auto-detect currency &amp; language from this country</label>
+                    <label for="adminAutoDetect">&nbsp;{{ t('auto_detect_label_admin') }}</label>
 
                 </div>
 
@@ -958,7 +959,7 @@ MOBILE
 
                     <i class="fa-solid fa-floppy-disk"></i>
 
-                    Save Region Settings
+                    {{ t('save_region_settings') }}
 
                 </button>
 
@@ -967,6 +968,9 @@ MOBILE
         </div>
 
     </div>
+
+    <div class="glass-card"><p class="text-center mt-3" style="color:#94a3b8;font-size:13px">{{ t('exchange_rates_label') }}: {{ rates_meta.source }}{% if rates_meta.date %} &middot; {{ rates_meta.date }}{% endif %}{% if not rates_meta.live %}<br><span style="color:#fbbf24">{{ t('rates_not_live') }}</span>{% endif %}</p>
+</div>
 
     <!-- FLASH MESSAGES -->
 
@@ -992,7 +996,7 @@ MOBILE
 
     <a href="/admin_settings">
         <button class="back-btn">
-            Back to Currency &amp; Language
+            {{ t('back_to_currency_language') }}
         </button>
     </a>
 

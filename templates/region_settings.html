@@ -4,7 +4,7 @@
 <head>
 
     <title>
-        Region & Auto-Detect
+        {{ t('region_auto_detect') }}
     </title>
 
     <link
@@ -28,7 +28,8 @@
 
             color: white;
 
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
 
             position: relative;
 
@@ -310,6 +311,7 @@ input:-webkit-autofill:active {
 
     </style>
 
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
 <body>
@@ -333,13 +335,13 @@ input:-webkit-autofill:active {
 
                         <i class="fa-solid fa-earth-asia me-2"></i>
 
-                        Region &amp; Auto-Detect
+                        {{ t('region_auto_detect') }}
 
                     </h1>
 
                     <p class="subtitle mt-3">
 
-                        Pick your country to auto-fill the right currency and language, or set them yourself below.
+                        {{ t('region_subtitle') }}
 
                     </p>
 
@@ -372,7 +374,7 @@ input:-webkit-autofill:active {
                     <div>
 
                         <h5>
-                            Currently Using
+                            {{ t('currently_using') }}
                         </h5>
 
                     </div>
@@ -393,7 +395,7 @@ input:-webkit-autofill:active {
 
                             <label class="form-label mb-3 fw-semibold">
 
-                                Your Country
+                                {{ t('your_country') }}
 
                             </label>
 
@@ -403,7 +405,7 @@ input:-webkit-autofill:active {
                                 id="countrySelect"
                             >
 
-                                <option value="">-- Select your country --</option>
+                                <option value="">{{ t('select_your_country') }}</option>
 
                                 {% for c in countries %}
                                 <option
@@ -431,7 +433,7 @@ input:-webkit-autofill:active {
 
                             <label class="form-check-label" for="autoDetectCheck">
 
-                                Auto-detect currency &amp; language from my country
+                                {{ t('auto_detect_label') }}
 
                             </label>
 
@@ -441,7 +443,7 @@ input:-webkit-autofill:active {
 
                             <label class="form-label mb-3 fw-semibold">
 
-                                Currency (manual override)
+                                {{ t('currency_manual') }}
 
                             </label>
 
@@ -468,7 +470,7 @@ input:-webkit-autofill:active {
 
                             <label class="form-label mb-3 fw-semibold">
 
-                                Language (manual override)
+                                {{ t('language_manual') }}
 
                             </label>
 
@@ -497,12 +499,13 @@ input:-webkit-autofill:active {
 
                             <i class="fa-solid fa-floppy-disk me-2"></i>
 
-                            Save Region Settings
+                            {{ t('save_region_settings') }}
 
                         </button>
 
                     </form>
 
+                    <p class="text-center mt-3" style="color:#94a3b8;font-size:13px">{{ t('exchange_rates_label') }}: {{ rates_meta.source }}{% if rates_meta.date %} &middot; {{ rates_meta.date }}{% endif %}{% if not rates_meta.live %}<br><span style="color:#fbbf24">{{ t('rates_not_live') }}</span>{% endif %}</p>
                     <a
                         href="/settings_storage"
                         class="btn btn-light w-100 mt-4 back-btn"
