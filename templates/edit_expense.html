@@ -45,6 +45,29 @@
             font-family: "Segoe UI", sans-serif;
         }
 
+        .btn-back {
+            display: block;
+            width: 100%;
+            margin-top: 14px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255,193,7,0.45);
+            border-radius: 18px;
+            color: #f8fafc;
+            background: rgba(255,193,7,0.07);
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 700;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        }
+
+        .btn-back:hover {
+            color: #fff;
+            background: rgba(255,193,7,0.15);
+            border-color: rgba(255,193,7,0.8);
+            transform: translateY(-1px);
+        }
+
         .floating-light {
 
             position: fixed;
@@ -467,13 +490,18 @@
 
                         </div>
 
-                        <button class="btn-update">
+                        <button type="submit" class="btn-update">
 
                             <i class="bi bi-check-circle-fill"></i>
 
                             {{ t('update_expense') }}
 
                         </button>
+
+                        <a href="{{ url_for('edit_expense_list') }}" class="btn-back">
+                            <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
+                            Back to Edit Expense List
+                        </a>
 
                     </form>
 

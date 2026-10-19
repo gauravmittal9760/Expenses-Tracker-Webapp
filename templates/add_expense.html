@@ -17,6 +17,29 @@
             position: relative;
         }
 
+        .btn-back {
+            display: block;
+            width: 100%;
+            margin-top: 14px;
+            padding: 13px 16px;
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 16px;
+            color: #e2e8f0;
+            background: rgba(255,255,255,0.045);
+            text-align: center;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        }
+
+        .btn-back:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.10);
+            border-color: rgba(56,189,248,0.65);
+            transform: translateY(-1px);
+        }
+
         .top-glow, .bottom-glow {
             position: absolute;
             width: 350px;
@@ -253,24 +276,16 @@
                             <i class="fa-solid fa-plus me-2" aria-hidden="true"></i>
                             {{ t('add_expense') }}
                         </button>
-                        <a
 
-                            href="/expense_management"
-
-                            class="bottom-btn"
-
-                        >
-
-                            <i class="fa-solid fa-arrow-left"></i>
-
-                            {{ t('back_to_expense_management') }}
-
+                        <a href="{{ url_for('expense_management') }}" class="btn-back">
+                            <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i>
+                            Back to Expense Management
                         </a>
-
                     </form>
                 </section>
             </div>
         </div>
     </main>
+
 </body>
 </html>
