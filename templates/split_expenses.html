@@ -583,7 +583,7 @@
 
             <div class="result-amount">
 
-                {{ currency_symbol }} {{ result }}
+                {{ currency_symbol }} {{ "%.2f"|format(result|float) }}
 
             </div>
 

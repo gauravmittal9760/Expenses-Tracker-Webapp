@@ -361,6 +361,51 @@
 
         }
 
+        .statement-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-right: 12px;
+            padding: 16px 28px;
+            border: 1px solid rgba(148,163,184,0.35);
+            border-radius: 18px;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.2s ease;
+        }
+
+        .back-btn:hover {
+            color: #fff;
+            background: #334155;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 575px) {
+            .bottom-bar {
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            .statement-actions {
+                width: 100%;
+            }
+            .back-btn, .print-btn {
+                margin: 0;
+                flex: 1 1 100%;
+            }
+        }
+
         @media print {
 
             .print-btn{
@@ -498,14 +543,20 @@
 
             </div>
 
-            <button
-                onclick="window.print()"
-                class="print-btn"
-            >
+            <div class="statement-actions">
+                <a href="/export_center" class="back-btn">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    {{ t('back') }}
+                </a>
 
-                {{ t('print_again') }}
-
-            </button>
+                <button
+                    type="button"
+                    onclick="window.print()"
+                    class="print-btn"
+                >
+                    {{ t('print_again') }}
+                </button>
+            </div>
 
         </div>
 
