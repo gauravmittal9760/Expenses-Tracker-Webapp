@@ -1,541 +1,273 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('add_expense') }}</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        {{ t('add_expense') }}
-    </title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-
         body {
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #0f172a,
-                    #111827,
-                    #1e293b
-                );
-
+            background: linear-gradient(135deg, #0f172a, #111827, #1e293b);
             min-height: 100vh;
-
             color: white;
-
             overflow-x: hidden;
-
             position: relative;
+        }
 
+        .top-glow, .bottom-glow {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            filter: blur(110px);
+            z-index: 0;
+            pointer-events: none;
         }
 
         .top-glow {
-
-            position: absolute;
-
-            width: 350px;
-
-            height: 350px;
-
-            background:
-                rgba(59,130,246,0.22);
-
-            filter: blur(110px);
-
+            background: rgba(59, 130, 246, 0.22);
             top: -120px;
-
             left: -100px;
-
-            z-index: 0;
-
         }
 
         .bottom-glow {
-
-            position: absolute;
-
-            width: 350px;
-
-            height: 350px;
-
-            background:
-                rgba(16,185,129,0.18);
-
-            filter: blur(110px);
-
+            background: rgba(16, 185, 129, 0.18);
             bottom: -120px;
-
             right: -100px;
-
-            z-index: 0;
-
         }
 
         .expense-card {
-
             position: relative;
-
             z-index: 1;
-
-            background:
-                rgba(15,23,42,0.88);
-
+            background: rgba(15, 23, 42, 0.88);
             backdrop-filter: blur(16px);
-
-            border:
-                1px solid rgba(255,255,255,0.08);
-
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 28px;
-
-            box-shadow:
-                0 20px 50px rgba(0,0,0,0.40);
-
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.40);
         }
 
         .expense-title {
-
             font-size: 42px;
-
             font-weight: 800;
-
             text-align: center;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #38bdf8,
-                    #818cf8,
-                    #22c55e
-                );
-
+            background: linear-gradient(90deg, #38bdf8, #818cf8, #22c55e);
             -webkit-background-clip: text;
-
             -webkit-text-fill-color: transparent;
-
             letter-spacing: 1px;
-
         }
 
         .subtitle {
-
             text-align: center;
-
-            color: rgba(255,255,255,0.68);
-
+            color: rgba(255, 255, 255, 0.68);
             margin-top: 10px;
-
             margin-bottom: 45px;
-
             font-size: 15px;
-
         }
 
         .input-label {
-
+            display: block;
             font-size: 15px;
-
             font-weight: 600;
-
             color: #dbeafe;
-
             margin-bottom: 10px;
-
         }
 
         .form-control {
-
-            background:
-                rgba(255,255,255,0.05) !important;
-
-            border:
-                1px solid rgba(255,255,255,0.10) !important;
-
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.10) !important;
             color: white !important;
-
             border-radius: 16px;
-
             padding: 15px 18px;
-
             font-size: 15px;
-
-            transition: 0.25s;
-
+            transition: border-color 0.25s, box-shadow 0.25s;
         }
 
         .form-control:focus {
-
-            background:
-                rgba(255,255,255,0.07) !important;
-
-            border-color:
-                #38bdf8 !important;
-
-            box-shadow:
-                0 0 0 4px rgba(56,189,248,0.15);
-
+            background: rgba(255, 255, 255, 0.07) !important;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
         }
 
-        .form-control::placeholder {
-
-            color:
-                rgba(255,255,255,0.45);
-
-        }
-
-        textarea.form-control {
-
-            resize: none;
-
-        }
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.45); }
+        textarea.form-control { resize: vertical; min-height: 96px; }
 
         input[type="date"]::-webkit-calendar-picker-indicator {
-
             filter: invert(1);
-
             cursor: pointer;
-
         }
 
-        input[type="file"] {
-
-            padding: 14px;
-
-        }
+        input[type="file"] { padding: 14px; }
 
         .upload-box {
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(59,130,246,0.12),
-                    rgba(16,185,129,0.10)
-                );
-
-            border:
-                1px dashed rgba(255,255,255,0.18);
-
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.10));
+            border: 1px dashed rgba(255, 255, 255, 0.18);
             border-radius: 20px;
-
             padding: 24px;
-
         }
 
-        .upload-text {
-
-            color:
-                rgba(255,255,255,0.70);
-
-            font-size: 14px;
-
-        }
+        .upload-text { color: rgba(255, 255, 255, 0.70); font-size: 14px; }
 
         .btn-success {
-
             border: none;
-
             border-radius: 16px;
-
             padding: 15px;
-
             font-size: 18px;
-
             font-weight: 700;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #22c55e,
-                    #16a34a
-                );
-
-            transition: 0.30s;
-
-            box-shadow:
-                0 10px 25px rgba(34,197,94,0.25);
-
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25);
         }
 
         .btn-success:hover {
-
             transform: translateY(-3px);
-
-            box-shadow:
-                0 14px 30px rgba(34,197,94,0.35);
-
+            box-shadow: 0 14px 30px rgba(34, 197, 94, 0.35);
         }
 
-        .input-group-icon {
+        .input-group-icon { position: relative; }
 
-            position: relative;
-
-        }
-
-        .input-group-icon i {
-
+        .input-group-icon > i {
             position: absolute;
-
             top: 50%;
-
             left: 16px;
-
             transform: translateY(-50%);
-
-            color:
-                rgba(255,255,255,0.55);
-
+            color: rgba(255, 255, 255, 0.55);
             z-index: 2;
-
+            pointer-events: none;
         }
 
-        .input-group-icon .form-control {
+        .input-group-icon > .form-control { padding-left: 48px; }
 
-            padding-left: 48px;
-
+        /* Currency marker stays INSIDE the amount field, vertically centered. */
+        .currency-icon {
+            position: absolute;
+            top: 50%;
+            left: 17px;
+            transform: translateY(-50%);
+            z-index: 3;
+            color: #e2e8f0;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            max-width: 75px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            pointer-events: none;
         }
 
-        .textarea-icon i {
+        .amount-input { padding-left: 76px !important; }
+        .currency-code-hint { color: rgba(255,255,255,0.55); font-size: 12px; margin-top: 7px; }
+        .textarea-icon > i { top: 24px; transform: none; }
 
-            top: 24px;
-
-            transform: none;
-
-        }
-
-        @media(max-width: 768px) {
-
-            .expense-title {
-
-                font-size: 32px;
-
-            }
-
-            .expense-card {
-
-                padding: 30px !important;
-
-            }
-
-        }
-
-        /* FIX AUTOFILL WHITE BACKGROUND ISSUE */
+        /* Fix browser autofill's white background on dark inputs. */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus,
         input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0px 1000px #111827 inset !important;
+            -webkit-box-shadow: 0 0 0 1000px #111827 inset !important;
             -webkit-text-fill-color: white !important;
             caret-color: white;
             transition: background-color 9999s ease-in-out 0s;
         }
 
+        @media (max-width: 768px) {
+            .expense-title { font-size: 32px; }
+            .expense-card { padding: 30px !important; }
+            .subtitle { margin-bottom: 32px; }
+        }
+
+        @media (max-width: 420px) {
+            .expense-card { padding: 22px !important; border-radius: 22px; }
+            .expense-title { font-size: 28px; }
+            .currency-icon { left: 13px; }
+            .amount-input { padding-left: 66px !important; }
+        }
     </style>
 
-<script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
-
 <body>
+    <div class="top-glow" aria-hidden="true"></div>
+    <div class="bottom-glow" aria-hidden="true"></div>
 
-<div class="top-glow"></div>
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <section class="card expense-card p-4 p-lg-5">
+                    <h2 class="expense-title">{{ t('add_expense_2') }}</h2>
+                    <div class="subtitle">{{ t('track_every_spending_smartly_and_manage_') }}</div>
 
-<div class="bottom-glow"></div>
-
-<div class="container py-5">
-
-    <div class="row justify-content-center">
-
-        <div class="col-lg-7">
-
-            <div class="card expense-card p-4 p-lg-5">
-
-                <!-- TITLE -->
-
-                <h2 class="expense-title">
-
-                    {{ t('add_expense_2') }}
-
-                </h2>
-
-                <div class="subtitle">
-
-                    {{ t('track_every_spending_smartly_and_manage_') }}
-
-                </div>
-
-                <!-- FORM -->
-
-                <form
-                    method="POST"
-                    enctype="multipart/form-data"
-                >
-
-                    <!-- CATEGORY -->
-
-                    <div class="mb-4">
-
-                        <label class="input-label">
-
-                            {{ t('expense_category') }}
-
-                        </label>
-
-                        <div class="input-group-icon">
-
-                            <i class="fa-solid fa-layer-group"></i>
-
-                            <input
-                                type="text"
-                                name="category"
-                                class="form-control"
-                                placeholder="Enter Expense Category"
-                                required
-                            >
-
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label class="input-label" for="category">{{ t('expense_category') }}</label>
+                            <div class="input-group-icon">
+                                <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                                <input id="category" type="text" name="category" class="form-control"
+                                       placeholder="Enter Expense Category" maxlength="100" required>
+                            </div>
                         </div>
 
-                    </div>
-
-                    <!-- DESCRIPTION -->
-
-                    <div class="mb-4">
-
-                        <label class="input-label">
-
-                            {{ t('description') }}
-
-                        </label>
-
-                        <div class="input-group-icon textarea-icon">
-
-                            <i class="fa-solid fa-pen"></i>
-
-                            <textarea
-                                name="description"
-                                class="form-control"
-                                placeholder="Write expense details..."
-                                rows="4"
-                            ></textarea>
-
+                        <div class="mb-4">
+                            <label class="input-label" for="description">{{ t('description') }}</label>
+                            <div class="input-group-icon textarea-icon">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                <textarea id="description" name="description" class="form-control"
+                                          placeholder="Write expense details..." rows="4" maxlength="500"></textarea>
+                            </div>
                         </div>
 
-                    </div>
-
-                    <!-- AMOUNT -->
-
-                    <div class="mb-4">
-
-                        <label class="input-label">
-
-                            {{ t('amount') }}
-
-                        </label>
-
-                        <div class="input-group-icon">
-
-                            <span class="currency-icon">{{ currency_symbol }}</span>
-
-                            <input
-                                type="number"
-                                name="amount"
-                                class="form-control"
-                                placeholder="Enter Amount"
-                                required
-                            >
-
+                        <div class="mb-4">
+                            <label class="input-label" for="amount">{{ t('amount') }}</label>
+                            <div class="input-group-icon">
+                                <span class="currency-icon" aria-hidden="true">{{ currency_symbol }}</span>
+                                <input id="amount" type="number" name="amount" class="form-control amount-input"
+                                       placeholder="Enter Amount" min="0.01" step="any" inputmode="decimal" required
+                                       aria-describedby="currency-hint">
+                            </div>
+                            <div class="currency-code-hint" id="currency-hint">
+                                Amount in {{ currency_code }} ({{ currency_symbol }})
+                            </div>
                         </div>
 
-                    </div>
-
-                    <!-- DATE -->
-
-                    <div class="mb-4">
-
-                        <label class="input-label">
-
-                            {{ t('expense_date') }}
-
-                        </label>
-
-                        <div class="input-group-icon">
-
-                            <i class="fa-solid fa-calendar-days"></i>
-
-                            <input
-                                type="date"
-                                name="date"
-                                class="form-control"
-                                required
-                            >
-
+                        <div class="mb-4">
+                            <label class="input-label" for="date">{{ t('expense_date') }}</label>
+                            <div class="input-group-icon">
+                                <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                                <input id="date" type="date" name="date" class="form-control" required>
+                            </div>
                         </div>
 
-                    </div>
+                        <div class="upload-box mb-4">
+                            <label class="input-label" for="images">
+                                <i class="fa-solid fa-images me-2" aria-hidden="true"></i>
+                                {{ t('upload_expense_image') }}
+                            </label>
+                            <input id="images" type="file" name="images" class="form-control custom-input"
+                                   multiple accept="image/png,image/jpeg">
+                            <div class="upload-text mt-3">{{ t('add_bill_screenshots_receipts_or_payment') }}</div>
+                        </div>
 
-                    <!-- IMAGE -->
-
-                    <div class="upload-box mb-4">
-
-                        <label class="input-label">
-
-                            <i class="fa-solid fa-images me-2"></i>
-
-                            {{ t('upload_expense_image') }}
-
-                        </label>
-
-                        <input
-                            type="file"
-                            name="images"
-                            class="form-control custom-input"
-                            multiple
-                            accept="image/*"
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fa-solid fa-plus me-2" aria-hidden="true"></i>
+                            {{ t('add_expense') }}
+                        </button>
+                        <a
+                            href="/money_budget"
+                            class="btn btn-outline-light back-btn"
                         >
 
-                        <div class="upload-text mt-3">
+                            <i class="fa-solid fa-arrow-left me-2"></i>
 
-                            {{ t('add_bill_screenshots_receipts_or_payment') }}
+                            {{ t('back') }}
 
-                        </div>
+                        </a>
 
-                    </div>
-
-                    <!-- BUTTON -->
-
-                    <button class="btn btn-success w-100">
-
-                        <i class="fa-solid fa-plus me-2"></i>
-
-                        {{ t('add_expense') }}
-
-                    </button>
-
-                </form>
-
+                    </form>
+                </section>
             </div>
-
         </div>
-
-    </div>
-
-</div>
-
+    </main>
 </body>
-
 </html>
